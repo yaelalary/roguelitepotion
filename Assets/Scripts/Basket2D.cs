@@ -6,13 +6,11 @@ public class Basket2D : MonoBehaviour
     [Header("References")]
     public DeckManager deckManager;
     public Transform ingredientsContainer; // GameObject vide où centrer les ingrédients
+    public GameObject ingredientPrefab; // Prefab d'ingrédient à instancier
     
     [Header("Ingredients Display")]
     public int ingredientsToDraw = 5;
     public float ingredientSpacing = 1.5f;
-    
-    [Header("Ingredient Size")]
-    public Vector2 ingredientSize = new Vector2(1f, 1f);
     
     private List<GameObject> drawnIngredients = new List<GameObject>();
     
@@ -36,8 +34,9 @@ public class Basket2D : MonoBehaviour
     
     void CreateIngredientSprite(Ingredient ingredient, int index)
     {
-        // Créer un nouvel objet pour l'ingrédient
-        GameObject ingredientObj = new GameObject($"Ingredient_{ingredient.ingredientName}");
+        // Instancier le prefab d'ingrédient
+        GameObject ingredientObj = Instantiate(ingredientPrefab);
+        ingredientObj.name = $"Ingredient_{ingredient.ingredientName}";
         
         // Calculer la position centrée
         float totalWidth = (ingredientsToDraw - 1) * ingredientSpacing;
@@ -45,17 +44,12 @@ public class Basket2D : MonoBehaviour
         Vector3 ingredientPosition = ingredientsContainer.position + new Vector3(startX + index * ingredientSpacing, 0, 0);
         ingredientObj.transform.position = ingredientPosition;
         
-        // Ajouter le sprite renderer
-        SpriteRenderer spriteRenderer = ingredientObj.AddComponent<SpriteRenderer>();
-        spriteRenderer.sprite = ingredient.icon;
-        spriteRenderer.sortingOrder = 2;
-        
-        // Ajuster la taille du sprite
-        ingredientObj.transform.localScale = new Vector3(ingredientSize.x, ingredientSize.y, 1f);
-        
-        // Ajouter un collider pour les interactions (ajusté à la taille)
-        BoxCollider2D collider = ingredientObj.AddComponent<BoxCollider2D>();
-        collider.size = Vector2.one; // Le collider sera automatiquement ajusté par le scale
+        // Configurer l'ingrédient
+        IngredientPrefab ingredientScript = ingredientObj.GetComponent<IngredientPrefab>();
+        if (ingredientScript != null)
+        {
+            ingredientScript.SetIngredient(ingredient);
+        }
         
         drawnIngredients.Add(ingredientObj);
     }
