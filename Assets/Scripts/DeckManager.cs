@@ -19,6 +19,7 @@ public class DeckManager : MonoBehaviour
         {
             for (int i = 0; i < copiesPerIngredient; i++) deck.Add(ingredient);
         }
+        Debug.Log("Deck generated with " + deck.Count + " cards.");
     }
 
     public Ingredient DrawIngredient()

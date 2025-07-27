@@ -50,7 +50,7 @@ public class IngredientPrefab : MonoBehaviour
     {
         if (ingredient != null)
         {
-            Debug.Log("Clicked on ingredient: " + ingredient.ingredientName);
+            Debug.Log("Clicked on ingredient: " + ingredient.IngredientName);
             ToggleSelection();
         }
     }

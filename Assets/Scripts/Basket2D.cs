@@ -32,7 +32,7 @@ public class Basket2D : MonoBehaviour
     void CreateIngredient(Ingredient ingredient, int index)
     {
         GameObject ingredientObj = Instantiate(ingredientPrefab);
-        ingredientObj.name = $"Ingredient_{ingredient.ingredientName}";
+        ingredientObj.name = $"Ingredient_{ingredient.IngredientName}";
         
         float totalWidth = (ingredientsToDraw - 1) * ingredientSpacing;
         float startX = -totalWidth / 2f;
@@ -78,7 +78,7 @@ public class Basket2D : MonoBehaviour
             if (newIngredient != null)
             {
                 GameObject newIngredientObj = Instantiate(ingredientPrefab);
-                newIngredientObj.name = $"Ingredient_{newIngredient.ingredientName}";
+                newIngredientObj.name = $"Ingredient_{newIngredient.IngredientName}";
                 
                 IngredientPrefab ingredientScript = newIngredientObj.GetComponent<IngredientPrefab>();
                 if (ingredientScript != null) ingredientScript.SetIngredient(newIngredient);
@@ -87,7 +87,9 @@ public class Basket2D : MonoBehaviour
             }
             else
             {
+                // If no more ingredients in deck, leave empty
                 drawnIngredients[position] = null;
+                Debug.Log("No more ingredients in deck!");
             }
         }
         

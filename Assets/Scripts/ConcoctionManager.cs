@@ -45,14 +45,14 @@ public class ConcoctionManager : MonoBehaviour
     {
         if (selectedIngredients.Count == 0) return;
 
-        Debug.Log($"Concoction d'une potion avec {selectedIngredients.Count} ingrédients:");
-
+        Debug.Log($"Brewing potion with {selectedIngredients.Count} ingredients:");
+        
         foreach (var ingredientPrefab in selectedIngredients)
         {
             var ingredient = ingredientPrefab.GetIngredient();
-            Debug.Log($"- {ingredient.ingredientName} ({ingredient.family}, {ingredient.subFamily})");
+            Debug.Log($"- {ingredient.IngredientName} ({ingredient.family}, {ingredient.subFamily})");
         }
-
+        
         // TODO: create potion logic here
         
         RemoveUsedIngredients();
