@@ -19,7 +19,6 @@ public class IngredientPrefab : MonoBehaviour
         originalPosition = transform.position;
         concoctionManager = FindObjectOfType<ConcoctionManager>();
         
-        // Ajuster le collider à la taille du sprite
         if (interactionCollider != null && iconRenderer != null && iconRenderer.sprite != null)
         {
             Vector2 spriteSize = iconRenderer.sprite.bounds.size;
@@ -34,8 +33,6 @@ public class IngredientPrefab : MonoBehaviour
         if (iconRenderer != null && ing.icon != null)
         {
             iconRenderer.sprite = ing.icon;
-            
-            // Réajuster le collider après avoir changé le sprite
             if (interactionCollider != null)
             {
                 Vector2 spriteSize = ing.icon.bounds.size;
@@ -63,30 +60,17 @@ public class IngredientPrefab : MonoBehaviour
         isSelected = !isSelected;
         UpdateVisuals();
         
-        // Notifier le manager de concoction
         if (concoctionManager != null)
         {
-            if (isSelected)
-            {
-                concoctionManager.AddSelectedIngredient(this);
-            }
-            else
-            {
-                concoctionManager.RemoveSelectedIngredient(this);
-            }
+            if (isSelected) concoctionManager.AddSelectedIngredient(this);
+            else concoctionManager.RemoveSelectedIngredient(this);
         }
     }
     
     void UpdateVisuals()
     {
-        if (isSelected)
-        {
-            transform.position = originalPosition + new Vector3(0, selectionOffset, 0);
-        }
-        else
-        {
-            transform.position = originalPosition;
-        }
+        if (isSelected) transform.position = originalPosition + new Vector3(0, selectionOffset, 0);
+        else transform.position = originalPosition;
     }
     
     public bool IsSelected()

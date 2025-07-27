@@ -21,7 +21,6 @@ public class DeckManager : MonoBehaviour
                 deck.Add(ingredient);
             }
         }
-        Debug.Log("Deck généré avec " + deck.Count + " cartes.");
     }
 
     public Ingredient DrawIngredient()

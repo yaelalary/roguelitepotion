@@ -11,7 +11,6 @@ public class ConcoctionManager : MonoBehaviour
     
     void Start()
     {
-        // S'assurer que le bouton est caché au début
         if (concoctButton != null)
         {
             concoctButton.gameObject.SetActive(false);
@@ -36,29 +35,24 @@ public class ConcoctionManager : MonoBehaviour
     
     void UpdateButtonVisibility()
     {
-        if (concoctButton != null)
-        {
-            concoctButton.gameObject.SetActive(selectedIngredients.Count > 0);
-        }
+        if (concoctButton != null) concoctButton.gameObject.SetActive(selectedIngredients.Count > 0);
     }
-    
+
     void ConcoctPotion()
     {
         if (selectedIngredients.Count == 0) return;
-        
+
         Debug.Log($"Concoction d'une potion avec {selectedIngredients.Count} ingrédients:");
-        
+
         foreach (var ingredientPrefab in selectedIngredients)
         {
             var ingredient = ingredientPrefab.GetIngredient();
             Debug.Log($"- {ingredient.ingredientName} ({ingredient.family}, {ingredient.subFamily})");
         }
+
+        // TODO: create potion logic here
         
-        // Ici vous pourrez ajouter la logique de création de potion
-        // Calculer les effets, le score, etc.
-        
-        // Optionnel : supprimer les ingrédients utilisés
-        // RemoveUsedIngredients();
+        RemoveUsedIngredients();
     }
     
     void RemoveUsedIngredients()
