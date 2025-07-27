@@ -7,6 +7,9 @@ public class ConcoctionManager : MonoBehaviour
     [Header("UI References")]
     public Button concoctButton;
     
+    [Header("Game References")]
+    public Basket2D basket;
+    
     private List<IngredientPrefab> selectedIngredients = new List<IngredientPrefab>();
     
     void Start()
@@ -57,9 +60,10 @@ public class ConcoctionManager : MonoBehaviour
     
     void RemoveUsedIngredients()
     {
-        foreach (var ingredientPrefab in selectedIngredients)
+        if (basket != null) basket.ReplaceIngredients(selectedIngredients);
+        else
         {
-            Destroy(ingredientPrefab.gameObject);
+            foreach (var ingredientPrefab in selectedIngredients) Destroy(ingredientPrefab.gameObject);
         }
         selectedIngredients.Clear();
         UpdateButtonVisibility();

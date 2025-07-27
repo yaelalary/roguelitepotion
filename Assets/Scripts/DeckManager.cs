@@ -4,6 +4,7 @@ using UnityEngine;
 public class DeckManager : MonoBehaviour
 {
     public Ingredient[] allIngredients;
+    public int copiesPerIngredient = 4;
     public List<Ingredient> deck = new List<Ingredient>();
 
     void Awake()
@@ -16,10 +17,7 @@ public class DeckManager : MonoBehaviour
         deck.Clear();
         foreach (var ingredient in allIngredients)
         {
-            for (int i = 0; i < 4; i++)
-            {
-                deck.Add(ingredient);
-            }
+            for (int i = 0; i < copiesPerIngredient; i++) deck.Add(ingredient);
         }
     }
 

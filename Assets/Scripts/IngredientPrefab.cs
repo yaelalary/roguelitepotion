@@ -83,4 +83,10 @@ public class IngredientPrefab : MonoBehaviour
         isSelected = selected;
         UpdateVisuals();
     }
+    
+    public void UpdateOriginalPosition(Vector3 newOriginalPosition)
+    {
+        originalPosition = newOriginalPosition;
+        if (!isSelected) transform.position = originalPosition;
+    }
 }
