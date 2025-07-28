@@ -1,18 +1,21 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using TMPro;
 
 public class ConcoctionManager : MonoBehaviour
 {
     [Header("UI References")]
     public Button concoctButton;
+    public TextMeshProUGUI recipeNameText;
     
     [Header("Game References")]
     public Basket2D basket;
     
     private List<IngredientPrefab> selectedIngredients = new List<IngredientPrefab>();
     private List<PotionRecipe> recipes = new List<PotionRecipe>();
-    
+    private PotionRecipe currentSelectedRecipe = null; // Currently selected recipe
+
     void Start()
     {
         if (concoctButton != null)
@@ -21,6 +24,9 @@ public class ConcoctionManager : MonoBehaviour
             concoctButton.onClick.AddListener(ConcoctPotion);
         }
         
+        // Initialize recipe display text
+        UpdateRecipeDisplay();
+        
         CreateAllRecipes();
     }
     
@@ -28,40 +34,32 @@ public class ConcoctionManager : MonoBehaviour
     {
         recipes.Clear();
         
-        // === 1 INGREDIENT RECIPES ===
-        CreateRecipe("Magic Plant Potion", "A basic potion made from one magic plant", 1, 1, 30,
-                    MagicPlantRequirement(1, 1));
+        // Recipe priority: most specific (uses most ingredients) to most general
         
-        CreateRecipe("Magic Animal Potion", "A basic potion made from one magic animal", 1, 1, 30,
-                    MagicAnimalRequirement(1, 1));
-        
-        CreateRecipe("Magic Mineral Potion", "A powerful potion made from one magic mineral", 2, 1, 60,
-                    MagicMineralRequirement(1, 1));
-        
-        // === 2 INGREDIENT RECIPES - SAME TYPE ===
-        CreateRecipe("Double Magic Plant Potion", "Enhanced plant magic", 2, 1, 45,
+        // 2 IDENTICAL INGREDIENTS - Most specific recipes
+        CreateRecipe("Double Magic Plant Potion", "Enhanced plant magic", 3, 1, 60,
                     MagicPlantRequirement(2, 2));
         
-        CreateRecipe("Double Magic Animal Potion", "Enhanced animal magic", 2, 1, 45,
+        CreateRecipe("Double Magic Animal Potion", "Enhanced animal magic", 3, 1, 60,
                     MagicAnimalRequirement(2, 2));
         
-        CreateRecipe("Double Magic Mineral Potion", "Very powerful mineral magic", 2, 1, 45,
+        CreateRecipe("Double Magic Mineral Potion", "Very powerful mineral magic", 3, 1, 90,
                     MagicMineralRequirement(2, 2));
         
-        // === 2 INGREDIENT RECIPES - MIXED MAGIC ===
-        CreateRecipe("Magic Plant & Animal Potion", "Mixed essence of plant and animal", 2, 1, 30,
+        // 2 DIFFERENT MAGIC INGREDIENTS
+        CreateRecipe("Magic Plant & Animal Potion", "Mixed essence of plant and animal", 2, 2, 45,
                     MagicPlantRequirement(1, 1),
                     MagicAnimalRequirement(1, 1));
         
-        CreateRecipe("Magic Plant & Mineral Potion", "Mixed essence of plant and mineral", 2, 1, 30,
+        CreateRecipe("Magic Plant & Mineral Potion", "Mixed essence of plant and mineral", 2, 2, 45,
                     MagicPlantRequirement(1, 1),
                     MagicMineralRequirement(1, 1));
         
-        CreateRecipe("Magic Animal & Mineral Potion", "Mixed essence of animal and mineral", 2, 1, 30,
+        CreateRecipe("Magic Animal & Mineral Potion", "Mixed essence of animal and mineral", 2, 2, 45,
                     MagicAnimalRequirement(1, 1),
                     MagicMineralRequirement(1, 1));
         
-        // === 2 INGREDIENT RECIPES - MAGIC + NATURAL ===
+        // 2 DIFFERENT INGREDIENTS - Magic + Natural
         CreateRecipe("Hybrid Plant Potion", "Magic and natural plant fusion", 2, 1, 30,
                     MagicPlantRequirement(1, 1),
                     NaturalPlantRequirement(1, 1));
@@ -73,8 +71,18 @@ public class ConcoctionManager : MonoBehaviour
         CreateRecipe("Hybrid Mineral Potion", "Magic and natural mineral fusion", 2, 1, 30,
                     MagicMineralRequirement(1, 1),
                     NaturalMineralRequirement(1, 1));
+        
+        // 1 INGREDIENT - General fallback recipes
+        CreateRecipe("Magic Plant Potion", "A basic potion made from one magic plant", 1, 1, 30,
+                    MagicPlantRequirement(1, 1));
+        
+        CreateRecipe("Magic Animal Potion", "A basic potion made from one magic animal", 1, 1, 30,
+                    MagicAnimalRequirement(1, 1));
+        
+        CreateRecipe("Magic Mineral Potion", "A powerful potion made from one magic mineral", 1, 2, 60,
+                    MagicMineralRequirement(1, 1));
 
-        Debug.Log($"Created {recipes.Count} recipes!");
+        Debug.Log($"Created {recipes.Count} recipes in specificity order!");
     }
     
     void CreateRecipe(string name, string description, int level, int subLevel, int duration, params CategoryRequirement[] requirements)
@@ -95,6 +103,7 @@ public class ConcoctionManager : MonoBehaviour
         if (!selectedIngredients.Contains(ingredient))
         {
             selectedIngredients.Add(ingredient);
+            UpdateRecipeSelection(); // Update selected recipe
             UpdateButtonVisibility();
         }
     }
@@ -102,6 +111,7 @@ public class ConcoctionManager : MonoBehaviour
     public void RemoveSelectedIngredient(IngredientPrefab ingredient)
     {
         selectedIngredients.Remove(ingredient);
+        UpdateRecipeSelection(); // Update selected recipe
         UpdateButtonVisibility();
     }
     
@@ -109,65 +119,70 @@ public class ConcoctionManager : MonoBehaviour
     {
         if (concoctButton != null) concoctButton.gameObject.SetActive(selectedIngredients.Count > 0);
     }
+    
+    void UpdateRecipeSelection()
+    {
+        // Find the first recipe (most specific) that matches current ingredients
+        currentSelectedRecipe = FindFirstMatchingRecipe();
+        UpdateRecipeDisplay();
+    }
+    
+    void UpdateRecipeDisplay()
+    {
+        if (recipeNameText != null)
+        {
+            if (currentSelectedRecipe != null)
+            {
+                recipeNameText.text = currentSelectedRecipe.potionName;
+            }
+            else
+            {
+                recipeNameText.text = selectedIngredients.Count > 0 ? "No valid recipe" : "Select ingredients";
+            }
+        }
+    }
+    
+    PotionRecipe FindFirstMatchingRecipe()
+    {
+        if (selectedIngredients.Count == 0) return null;
+        
+        // Convert selected ingredients to ingredient list
+        List<Ingredient> ingredients = new List<Ingredient>();
+        foreach (var ingredientPrefab in selectedIngredients)
+        {
+            ingredients.Add(ingredientPrefab.GetIngredient());
+        }
+        
+        // Return the FIRST recipe that matches (most specific due to ordering)
+        foreach (PotionRecipe recipe in recipes)
+        {
+            if (recipe.MatchesIngredients(ingredients))
+            {
+                return recipe;
+            }
+        }
+        
+        return null; // No matching recipe found
+    }
 
     void ConcoctPotion()
     {
-        if (selectedIngredients.Count == 0) return;
+        if (selectedIngredients.Count == 0 || currentSelectedRecipe == null) return;
         
-        // Get the ingredients from selected prefabs
-        List<Ingredient> ingredients = new List<Ingredient>();
-        Debug.Log("=== DEBUGGING CONCOCTION ===");
-        Debug.Log($"Number of selected ingredients: {selectedIngredients.Count}");
+        Debug.Log("=== CONCOCTING POTION ===");
+        Debug.Log($"Selected Recipe: {currentSelectedRecipe.potionName}");
+        Debug.Log($"Description: {currentSelectedRecipe.description}");
+        Debug.Log($"Level: {currentSelectedRecipe.level}.{currentSelectedRecipe.subLevel}");
+        Debug.Log($"Duration: {currentSelectedRecipe.duration} seconds");
+        Debug.Log($"Ingredients used:");
         
         foreach (var ingredientPrefab in selectedIngredients)
         {
             var ingredient = ingredientPrefab.GetIngredient();
-            ingredients.Add(ingredient);
-            Debug.Log($"Ingredient: {ingredient.IngredientName} | Family: {ingredient.family} | SubFamily: {ingredient.subFamily}");
+            Debug.Log($"- {ingredient.IngredientName} ({ingredient.family}, {ingredient.subFamily})");
         }
         
-        // Check for magic ingredients manually
-        int magicCount = 0;
-        foreach (var ingredient in ingredients)
-        {
-            if (ingredient.family == IngredientFamily.Magic)
-            {
-                magicCount++;
-            }
-        }
-        Debug.Log($"Number of magic ingredients detected: {magicCount}");
-        
-        // Find matching recipe
-        PotionRecipe matchedRecipe = null;
-        matchedRecipe = FindBestRecipe(ingredients);
-        
-        if (matchedRecipe != null)
-        {
-            // Successfully created a potion!            
-            Debug.Log($"=== POTION CREATED ===");
-            Debug.Log($"Potion: {matchedRecipe.potionName}");
-            Debug.Log($"Description: {matchedRecipe.description}");
-            Debug.Log($"Level: {matchedRecipe.level}.{matchedRecipe.subLevel}");
-            Debug.Log($"Duration: {matchedRecipe.duration} seconds");
-            Debug.Log($"Ingredients used:");
-            
-            foreach (var ingredientPrefab in selectedIngredients)
-            {
-                var ingredient = ingredientPrefab.GetIngredient();
-                Debug.Log($"- {ingredient.IngredientName} ({ingredient.family}, {ingredient.subFamily})");
-            }
-            
-            // TODO: Add potion to inventory, update score, show success animation
-        }
-        else
-        {
-            // Failed to create potion
-            Debug.Log("=== POTION FAILED ===");
-            Debug.Log("These ingredients don't make a valid potion!");
-            
-            // TODO: Show failure feedback, maybe return ingredients or penalty
-            return; // Don't remove ingredients if potion failed
-        }
+        // TODO: Add potion to inventory, update score, show success animation
         
         // Remove used ingredients and hide button
         RemoveUsedIngredients();
@@ -181,33 +196,14 @@ public class ConcoctionManager : MonoBehaviour
             foreach (var ingredientPrefab in selectedIngredients) Destroy(ingredientPrefab.gameObject);
         }
         selectedIngredients.Clear();
+        currentSelectedRecipe = null; // Reset selected recipe
+        UpdateRecipeDisplay();
         UpdateButtonVisibility();
     }
     
     public List<IngredientPrefab> GetSelectedIngredients()
     {
         return new List<IngredientPrefab>(selectedIngredients);
-    }
-
-    public PotionRecipe FindBestRecipe(List<Ingredient> ingredients)
-    {
-        PotionRecipe bestRecipe = null;
-        int bestScore = -1;
-
-        foreach (PotionRecipe recipe in recipes)
-        {
-            if (recipe.MatchesIngredients(ingredients))
-            {
-                int score = recipe.CalculateScore(ingredients);
-                if (score > bestScore)
-                {
-                    bestScore = score;
-                    bestRecipe = recipe;
-                }
-            }
-        }
-
-        return bestRecipe;
     }
 
     // Helper methods for creating requirements
