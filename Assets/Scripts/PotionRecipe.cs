@@ -4,45 +4,42 @@ using System.Collections.Generic;
 [System.Serializable]
 public class PotionRecipe
 {
-    public string potionName;
-    public string description;
+    public string potionName = "";
+    public string description = "";
     public Sprite potionIcon;
     
     [Header("Recipe Requirements")]
     public int minIngredients = 1;
     public int maxIngredients = 4;
-    public bool requiresMagicIngredient = true;
+    // Recipes can now have flexible magic ingredient requirements
     
     [Header("Category Requirements")]
     public List<CategoryRequirement> categoryRequirements = new List<CategoryRequirement>();
     
-    [Header("Potion Effects")]
-    public int baseScore = 10;
-    public float scoreMultiplier = 1.0f;
+    [Header("Potion Properties")]
+    public int level = 1;
+    public int subLevel = 1;
+    public int duration = 30;
+    
+    // Constructor to ensure lists are never null
+    public PotionRecipe()
+    {
+        if (categoryRequirements == null)
+            categoryRequirements = new List<CategoryRequirement>();
+    }
     
     /// <summary>
     /// Checks if the given ingredients match this recipe
     /// </summary>
     public bool MatchesIngredients(List<Ingredient> ingredients)
     {
+        // Safety check
+        if (categoryRequirements == null)
+            categoryRequirements = new List<CategoryRequirement>();
+            
         // Check ingredient count
         if (ingredients.Count < minIngredients || ingredients.Count > maxIngredients)
             return false;
-        
-        // Check if at least one magic ingredient is required
-        if (requiresMagicIngredient)
-        {
-            bool hasMagicIngredient = false;
-            foreach (var ingredient in ingredients)
-            {
-                if (ingredient.family == IngredientFamily.Magic)
-                {
-                    hasMagicIngredient = true;
-                    break;
-                }
-            }
-            if (!hasMagicIngredient) return false;
-        }
         
         // Check category requirements
         foreach (var requirement in categoryRequirements)
@@ -55,19 +52,12 @@ public class PotionRecipe
     }
     
     /// <summary>
-    /// Calculate the score for this potion based on ingredients
+    /// Calculate a score for recipe comparison based on level and sublevel
     /// </summary>
     public int CalculateScore(List<Ingredient> ingredients)
     {
-        float score = baseScore;
-        
-        // Bonus for using more ingredients
-        score += (ingredients.Count - 1) * 5;
-        
-        // Apply multiplier
-        score *= scoreMultiplier;
-        
-        return Mathf.RoundToInt(score);
+        // Score based on potion level (higher = better)
+        return level * 100 + subLevel;
     }
 }
 
@@ -82,6 +72,8 @@ public class CategoryRequirement
     
     public bool IsSatisfiedBy(List<Ingredient> ingredients)
     {
+        if (ingredients == null) return false;
+        
         int count = 0;
         
         foreach (var ingredient in ingredients)

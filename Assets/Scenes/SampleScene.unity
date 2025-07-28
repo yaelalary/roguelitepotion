@@ -454,7 +454,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 5fab8034e4b9f854e9d62644d2c7076a, type: 2}
   - {fileID: 11400000, guid: b1de786eafa94da42afb1efd0116142d, type: 2}
   - {fileID: 11400000, guid: 9358f710c2cdde64888282fc6f2472cc, type: 2}
-  copiesPerIngredient: 1
+  copiesPerIngredient: 2
   deck: []
 --- !u!4 &1554145996
 Transform:

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dd82f7d556f1f0848ade6aa62c9247b1, type: 3}
   m_Name: dreamstone
   m_EditorClassIdentifier: 
-  ingredientName: Dreamstone
+  ingredientName: dreamstone
   family: 1
   subFamily: 2
   description: 

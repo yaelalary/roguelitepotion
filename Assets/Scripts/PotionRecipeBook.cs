@@ -2,38 +2,66 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 
-[CreateAssetMenu(fileName = "PotionRecipeBook", menuName = "PotionGame/Recipe Book")]
-public class PotionRecipeBook : ScriptableObject
+public class PotionRecipeBook : MonoBehaviour
 {
-    [Header("All Available Recipes")]
-    public List<PotionRecipe> recipes = new List<PotionRecipe>();
+    private List<PotionRecipe> recipes = new List<PotionRecipe>();
     
-    [ContextMenu("Create Default Recipes")]
-    public void CreateDefaultRecipes()
+    void Awake()
+    {
+        CreateAllRecipes();
+    }
+    
+    void CreateAllRecipes()
     {
         recipes.Clear();
         
-        // === AJOUTEZ VOS RECETTES ICI ===
-        // Exemples de syntaxe :
+        // === 1 INGREDIENT RECIPES ===
+        CreateRecipe("Magic Plant Potion", "A basic potion made from one magic plant", 1, 1, 1,
+                    MagicPlantRequirement(1, 1));
         
-        // CreateRecipe("Nom de la potion", "Description", score_de_base, requirements...);
+        CreateRecipe("Magic Animal Potion", "A basic potion made from one magic animal", 1, 1, 1,
+                    MagicAnimalRequirement(1, 1));
         
-        // Exemples de requirements :
-        // MagicRequirement(1, 1)                    // 1 ingrédient magique (n'importe lequel)
-        // PlantRequirement(1, 1)                    // 1 plante naturelle
-        // AnimalRequirement(1, 1)                   // 1 animal naturel
-        // MineralRequirement(1, 1)                  // 1 minéral naturel
+        CreateRecipe("Magic Mineral Potion", "A powerful potion made from one magic mineral", 1, 1, 1,
+                    MagicMineralRequirement(1, 1));
         
-        // Exemple de recette simple :
-        // CreateRecipe("Ma Potion", "Ma description", 100,
-        //             PlantRequirement(1, 1),
-        //             MagicRequirement(1, 1));
+        // === 2 INGREDIENT RECIPES - SAME TYPE ===
+        CreateRecipe("Double Magic Plant Potion", "Enhanced plant magic", 2, 1, 4,
+                    MagicPlantRequirement(2, 2));
         
+        CreateRecipe("Double Magic Animal Potion", "Enhanced animal magic", 2, 1, 4,
+                    MagicAnimalRequirement(2, 2));
+        
+        CreateRecipe("Double Magic Mineral Potion", "Very powerful mineral magic", 2, 1, 4,
+                    MagicMineralRequirement(2, 2));
+        
+        // === 2 INGREDIENT RECIPES - MIXED MAGIC ===
+        CreateRecipe("Magic Plant & Animal Potion", "Mixed essence of plant and animal", 2, 1, 3,
+                    MagicPlantRequirement(1, 1),
+                    MagicAnimalRequirement(1, 1));
+        
+        CreateRecipe("Magic Plant & Mineral Potion", "Mixed essence of plant and mineral", 2, 1, 3,
+                    MagicPlantRequirement(1, 1),
+                    MagicMineralRequirement(1, 1));
+        
+        CreateRecipe("Magic Animal & Mineral Potion", "Mixed essence of animal and mineral", 2, 1, 3,
+                    MagicAnimalRequirement(1, 1),
+                    MagicMineralRequirement(1, 1));
+        
+        // === 2 INGREDIENT RECIPES - MAGIC + NATURAL ===
+        CreateRecipe("Hybrid Plant Potion", "Magic and natural plant fusion", 2, 1, 2,
+                    MagicPlantRequirement(1, 1),
+                    NaturalPlantRequirement(1, 1));
+        
+        CreateRecipe("Hybrid Animal Potion", "Magic and natural animal fusion", 2, 1, 2,
+                    MagicAnimalRequirement(1, 1),
+                    NaturalAnimalRequirement(1, 1));
+        
+        CreateRecipe("Hybrid Mineral Potion", "Magic and natural mineral fusion", 2, 1, 2,
+                    MagicMineralRequirement(1, 1),
+                    NaturalMineralRequirement(1, 1));
+
         Debug.Log($"Created {recipes.Count} recipes!");
-        
-        #if UNITY_EDITOR
-        UnityEditor.EditorUtility.SetDirty(this);
-        #endif
     }
     
     /// <summary>
@@ -44,24 +72,7 @@ public class PotionRecipeBook : ScriptableObject
         if (ingredients == null || ingredients.Count == 0)
             return null;
         
-        // Check if there's at least one magic ingredient (game rule)
-        bool hasMagicIngredient = false;
-        foreach (var ingredient in ingredients)
-        {
-            if (ingredient.family == IngredientFamily.Magic)
-            {
-                hasMagicIngredient = true;
-                break;
-            }
-        }
-        
-        if (!hasMagicIngredient)
-        {
-            Debug.Log("Recipe search failed: No magic ingredient found!");
-            return null;
-        }
-        
-        // Find all matching recipes
+        // Find all matching recipes (MatchesIngredients will check for magic ingredient)
         List<PotionRecipe> matchingRecipes = new List<PotionRecipe>();
         
         foreach (var recipe in recipes)
@@ -75,10 +86,11 @@ public class PotionRecipeBook : ScriptableObject
         // If no recipe matches, the potion is invalid
         if (matchingRecipes.Count == 0)
         {
+            Debug.Log("Recipe search failed: No matching recipe found!");
             return null; // No valid potion possible
         }
         
-        // Return the recipe with highest score potential
+        // Return the recipe with highest level (level.subLevel)
         return matchingRecipes.OrderByDescending(r => r.CalculateScore(ingredients)).First();
     }
     
@@ -150,29 +162,22 @@ public class PotionRecipeBook : ScriptableObject
     
     // === RECIPE CREATION HELPERS ===
     
-    private void CreateRecipe(string name, string description, int baseScore, params CategoryRequirement[] requirements)
+    private void CreateRecipe(string name, string description, int level, int subLevel, int duration, params CategoryRequirement[] requirements)
     {
         var recipe = new PotionRecipe();
         recipe.potionName = name;
         recipe.description = description;
-        recipe.baseScore = baseScore;
+        recipe.level = level;
+        recipe.subLevel = subLevel;
+        recipe.duration = duration;
         recipe.categoryRequirements = new List<CategoryRequirement>(requirements);
         
         recipes.Add(recipe);
     }
     
-    private CategoryRequirement MagicRequirement(int minCount, int maxCount)
-    {
-        return new CategoryRequirement
-        {
-            type = RequirementType.Family,
-            targetFamily = IngredientFamily.Magic,
-            minCount = minCount,
-            maxCount = maxCount
-        };
-    }
+    // === NATURAL INGREDIENT HELPERS ===
     
-    private CategoryRequirement PlantRequirement(int minCount, int maxCount)
+    private CategoryRequirement NaturalPlantRequirement(int minCount, int maxCount)
     {
         return new CategoryRequirement
         {
@@ -184,7 +189,19 @@ public class PotionRecipeBook : ScriptableObject
         };
     }
     
-    private CategoryRequirement MineralRequirement(int minCount, int maxCount)
+    private CategoryRequirement NaturalAnimalRequirement(int minCount, int maxCount)
+    {
+        return new CategoryRequirement
+        {
+            type = RequirementType.FamilyAndSubFamily,
+            targetFamily = IngredientFamily.Natural,
+            targetSubFamily = IngredientSubFamily.Animal,
+            minCount = minCount,
+            maxCount = maxCount
+        };
+    }
+    
+    private CategoryRequirement NaturalMineralRequirement(int minCount, int maxCount)
     {
         return new CategoryRequirement
         {
@@ -196,13 +213,39 @@ public class PotionRecipeBook : ScriptableObject
         };
     }
     
-    private CategoryRequirement AnimalRequirement(int minCount, int maxCount)
+    // === MAGIC INGREDIENT HELPERS ===
+    
+    private CategoryRequirement MagicPlantRequirement(int minCount, int maxCount)
     {
         return new CategoryRequirement
         {
             type = RequirementType.FamilyAndSubFamily,
-            targetFamily = IngredientFamily.Natural,
+            targetFamily = IngredientFamily.Magic,
+            targetSubFamily = IngredientSubFamily.Plant,
+            minCount = minCount,
+            maxCount = maxCount
+        };
+    }
+    
+    private CategoryRequirement MagicAnimalRequirement(int minCount, int maxCount)
+    {
+        return new CategoryRequirement
+        {
+            type = RequirementType.FamilyAndSubFamily,
+            targetFamily = IngredientFamily.Magic,
             targetSubFamily = IngredientSubFamily.Animal,
+            minCount = minCount,
+            maxCount = maxCount
+        };
+    }
+    
+    private CategoryRequirement MagicMineralRequirement(int minCount, int maxCount)
+    {
+        return new CategoryRequirement
+        {
+            type = RequirementType.FamilyAndSubFamily,
+            targetFamily = IngredientFamily.Magic,
+            targetSubFamily = IngredientSubFamily.Mineral,
             minCount = minCount,
             maxCount = maxCount
         };
