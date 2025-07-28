@@ -49,18 +49,42 @@ public class PotionRecipeBook : MonoBehaviour
                     MagicMineralRequirement(1, 1));
         
         // === 2 INGREDIENT RECIPES - MAGIC + NATURAL ===
-        CreateRecipe("Hybrid Plant Potion", "Magic and natural plant fusion", 2, 1, 2,
+        CreateRecipe("Hybrid Potion", "Fusion", 2, 1, 2,
                     MagicPlantRequirement(1, 1),
                     NaturalPlantRequirement(1, 1));
+
+        CreateRecipe("Hybrid Potion", "Fusion", 2, 1, 2,
+                    MagicPlantRequirement(1, 1),
+                    NaturalAnimalRequirement(1, 1));
+
+        CreateRecipe("Hybrid Potion", "Fusion", 2, 1, 2,
+                    MagicPlantRequirement(1, 1),
+                    NaturalMineralRequirement(1, 1));
         
-        CreateRecipe("Hybrid Animal Potion", "Magic and natural animal fusion", 2, 1, 2,
+        CreateRecipe("Hybrid Potion", "Fusion", 2, 1, 2,
+                    MagicAnimalRequirement(1, 1),
+                    NaturalPlantRequirement(1, 1));
+
+        CreateRecipe("Hybrid Potion", "Fusion", 2, 1, 2,
                     MagicAnimalRequirement(1, 1),
                     NaturalAnimalRequirement(1, 1));
+
+        CreateRecipe("Hybrid Potion", "Fusion", 2, 1, 2,
+                    MagicAnimalRequirement(1, 1),
+                    NaturalMineralRequirement(1, 1));
         
-        CreateRecipe("Hybrid Mineral Potion", "Magic and natural mineral fusion", 2, 1, 2,
+        CreateRecipe("Hybrid Potion", "Fusion", 2, 1, 2,
+                    MagicMineralRequirement(1, 1),
+                    NaturalPlantRequirement(1, 1));
+
+        CreateRecipe("Hybrid Potion", "Fusion", 2, 1, 2,
+                    MagicMineralRequirement(1, 1),
+                    NaturalAnimalRequirement(1, 1));
+
+        CreateRecipe("Hybrid Potion", "Fusion", 2, 1, 2,
                     MagicMineralRequirement(1, 1),
                     NaturalMineralRequirement(1, 1));
-
+                    
         Debug.Log($"Created {recipes.Count} recipes!");
     }
     
