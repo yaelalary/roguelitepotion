@@ -19,26 +19,16 @@ public class IngredientPrefab : MonoBehaviour
         originalPosition = transform.position;
         concoctionManager = FindObjectOfType<ConcoctionManager>();
         
-        if (interactionCollider != null && iconRenderer != null && iconRenderer.sprite != null)
-        {
-            Vector2 spriteSize = iconRenderer.sprite.bounds.size;
-            interactionCollider.size = spriteSize;
-        }
+        Vector2 spriteSize = iconRenderer.sprite.bounds.size;
+        interactionCollider.size = spriteSize;
     }
     
     public void SetIngredient(Ingredient ing)
     {
         ingredient = ing;
-        
-        if (iconRenderer != null && ing.icon != null)
-        {
-            iconRenderer.sprite = ing.icon;
-            if (interactionCollider != null)
-            {
-                Vector2 spriteSize = ing.icon.bounds.size;
-                interactionCollider.size = spriteSize;
-            }
-        }
+        iconRenderer.sprite = ing.icon;
+        Vector2 spriteSize = ing.icon.bounds.size;
+        interactionCollider.size = spriteSize;
     }
     
     public Ingredient GetIngredient()
@@ -48,11 +38,7 @@ public class IngredientPrefab : MonoBehaviour
     
     void OnMouseDown()
     {
-        if (ingredient != null)
-        {
-            Debug.Log("Clicked on ingredient: " + ingredient.IngredientName);
-            ToggleSelection();
-        }
+        ToggleSelection();
     }
     
     public void ToggleSelection()
@@ -72,12 +58,7 @@ public class IngredientPrefab : MonoBehaviour
         if (isSelected) transform.position = originalPosition + new Vector3(0, selectionOffset, 0);
         else transform.position = originalPosition;
     }
-    
-    public bool IsSelected()
-    {
-        return isSelected;
-    }
-    
+
     public void SetSelected(bool selected)
     {
         isSelected = selected;

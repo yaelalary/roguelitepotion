@@ -40,51 +40,49 @@ public class ConcoctionManager : MonoBehaviour
         
         // 2 IDENTICAL INGREDIENTS - Most specific recipes
         CreateRecipe("Double Magic Plant Potion", "Enhanced plant magic", 3, 1, 60,
-                    MagicPlantRequirement(2, 2));
+                    RecipeUtils.MagicPlant(2, 2));
         
         CreateRecipe("Double Magic Animal Potion", "Enhanced animal magic", 3, 1, 60,
-                    MagicAnimalRequirement(2, 2));
+                    RecipeUtils.MagicAnimal(2, 2));
         
         CreateRecipe("Double Magic Mineral Potion", "Very powerful mineral magic", 3, 1, 90,
-                    MagicMineralRequirement(2, 2));
+                    RecipeUtils.MagicMineral(2, 2));
         
         // 2 DIFFERENT MAGIC INGREDIENTS
         CreateRecipe("Magic Plant & Animal Potion", "Mixed essence of plant and animal", 2, 2, 45,
-                    MagicPlantRequirement(1, 1),
-                    MagicAnimalRequirement(1, 1));
+                    RecipeUtils.MagicPlant(1, 1),
+                    RecipeUtils.MagicAnimal(1, 1));
         
         CreateRecipe("Magic Plant & Mineral Potion", "Mixed essence of plant and mineral", 2, 2, 45,
-                    MagicPlantRequirement(1, 1),
-                    MagicMineralRequirement(1, 1));
+                    RecipeUtils.MagicPlant(1, 1),
+                    RecipeUtils.MagicMineral(1, 1));
         
         CreateRecipe("Magic Animal & Mineral Potion", "Mixed essence of animal and mineral", 2, 2, 45,
-                    MagicAnimalRequirement(1, 1),
-                    MagicMineralRequirement(1, 1));
+                    RecipeUtils.MagicAnimal(1, 1),
+                    RecipeUtils.MagicMineral(1, 1));
         
         // 2 DIFFERENT INGREDIENTS - Magic + Natural
         CreateRecipe("Hybrid Plant Potion", "Magic and natural plant fusion", 2, 1, 30,
-                    MagicPlantRequirement(1, 1),
-                    NaturalPlantRequirement(1, 1));
+                    RecipeUtils.MagicPlant(1, 1),
+                    RecipeUtils.NaturalPlant(1, 1));
         
         CreateRecipe("Hybrid Animal Potion", "Magic and natural animal fusion", 2, 1, 30,
-                    MagicAnimalRequirement(1, 1),
-                    NaturalAnimalRequirement(1, 1));
+                    RecipeUtils.MagicAnimal(1, 1),
+                    RecipeUtils.NaturalAnimal(1, 1));
         
         CreateRecipe("Hybrid Mineral Potion", "Magic and natural mineral fusion", 2, 1, 30,
-                    MagicMineralRequirement(1, 1),
-                    NaturalMineralRequirement(1, 1));
+                    RecipeUtils.MagicMineral(1, 1),
+                    RecipeUtils.NaturalMineral(1, 1));
         
         // 1 INGREDIENT - General fallback recipes
         CreateRecipe("Magic Plant Potion", "A basic potion made from one magic plant", 1, 1, 30,
-                    MagicPlantRequirement(1, 1));
+                    RecipeUtils.MagicPlant(1, 1));
         
         CreateRecipe("Magic Animal Potion", "A basic potion made from one magic animal", 1, 1, 30,
-                    MagicAnimalRequirement(1, 1));
+                    RecipeUtils.MagicAnimal(1, 1));
         
         CreateRecipe("Magic Mineral Potion", "A powerful potion made from one magic mineral", 1, 2, 60,
-                    MagicMineralRequirement(1, 1));
-
-        Debug.Log($"Created {recipes.Count} recipes in specificity order!");
+                    RecipeUtils.MagicMineral(1, 1));
     }
     
     void CreateRecipe(string name, string description, int level, int subLevel, int duration, params CategoryRequirement[] requirements)
@@ -171,21 +169,18 @@ public class ConcoctionManager : MonoBehaviour
     {
         if (selectedIngredients.Count == 0 || currentSelectedRecipe == null) return;
         
-        Debug.Log("=== CONCOCTING POTION ===");
-        Debug.Log($"Selected Recipe: {currentSelectedRecipe.potionName}");
-        Debug.Log($"Description: {currentSelectedRecipe.description}");
-        Debug.Log($"Level: {currentSelectedRecipe.level}.{currentSelectedRecipe.subLevel}");
-        Debug.Log($"Duration: {currentSelectedRecipe.duration} seconds");
-        Debug.Log($"Ingredients used:");
-        
+        // Generate unique potion ID based on ingredients used
+        List<Ingredient> ingredients = new List<Ingredient>();
         foreach (var ingredientPrefab in selectedIngredients)
         {
-            var ingredient = ingredientPrefab.GetIngredient();
-            Debug.Log($"- {ingredient.IngredientName} ({ingredient.family}, {ingredient.subFamily})");
+            ingredients.Add(ingredientPrefab.GetIngredient());
         }
+        string potionId = PotionUtils.GeneratePotionId(ingredients);
         
-        // TODO: Add potion to inventory, update score, show success animation
-        CreatePotionOnShelf();
+        Debug.Log("=== CONCOCTING POTION ===");
+        Debug.Log($"Potion ID: {potionId}");
+       
+        CreatePotionOnShelf(potionId);
         
         // Remove used ingredients and hide button
         RemoveUsedIngredients();
@@ -193,11 +188,7 @@ public class ConcoctionManager : MonoBehaviour
     
     void RemoveUsedIngredients()
     {
-        if (basket != null) basket.ReplaceIngredients(selectedIngredients);
-        else
-        {
-            foreach (var ingredientPrefab in selectedIngredients) Destroy(ingredientPrefab.gameObject);
-        }
+        basket.ReplaceIngredients(selectedIngredients);
         selectedIngredients.Clear();
         currentSelectedRecipe = null; // Reset selected recipe
         UpdateRecipeDisplay();
@@ -209,9 +200,9 @@ public class ConcoctionManager : MonoBehaviour
         return new List<IngredientPrefab>(selectedIngredients);
     }
 
-    void CreatePotionOnShelf()
+    void CreatePotionOnShelf(string potionId)
     {
-        if (currentSelectedRecipe == null || potionPrefab == null) return;
+        if (currentSelectedRecipe == null) return;
         
         // Find first available shelf
         Transform availableShelf = FindFirstAvailableShelf();
@@ -224,11 +215,14 @@ public class ConcoctionManager : MonoBehaviour
         
         // Create potion on the shelf (centered on parent)
         GameObject newPotion = Instantiate(potionPrefab, availableShelf);
+        // Set the potion's name to include the unique ID
+        newPotion.name = $"Potion_{potionId}";
         
-        // TODO: Set potion properties based on currentSelectedRecipe
-        // For example: newPotion.GetComponent<Potion>().SetRecipe(currentSelectedRecipe);
-        
-        Debug.Log($"Potion '{currentSelectedRecipe.potionName}' created on shelf!");
+        // Set potion properties if it has a Potion component
+        Potion potionComponent = newPotion.GetComponent<Potion>();
+        potionComponent.SetRecipe(currentSelectedRecipe, potionId);
+
+        Debug.Log($"Potion '{currentSelectedRecipe.potionName}' (ID: {potionId}) created on shelf!");
     }
     
     Transform FindFirstAvailableShelf()
@@ -247,78 +241,5 @@ public class ConcoctionManager : MonoBehaviour
     {
         // Check if shelf has any children (potions)
         return shelf.childCount == 0;
-    }
-    
-    // Helper methods for creating requirements
-    private CategoryRequirement MagicPlantRequirement(int minQuantity = 1, int maxQuantity = 1)
-    {
-        return new CategoryRequirement
-        {
-            type = RequirementType.FamilyAndSubFamily,
-            targetFamily = IngredientFamily.Magic,
-            targetSubFamily = IngredientSubFamily.Plant,
-            minCount = minQuantity,
-            maxCount = maxQuantity
-        };
-    }
-
-    private CategoryRequirement NaturalAnimalRequirement(int minQuantity = 1, int maxQuantity = 1)
-    {
-        return new CategoryRequirement
-        {
-            type = RequirementType.FamilyAndSubFamily,
-            targetFamily = IngredientFamily.Natural,
-            targetSubFamily = IngredientSubFamily.Animal,
-            minCount = minQuantity,
-            maxCount = maxQuantity
-        };
-    }
-
-    private CategoryRequirement NaturalMineralRequirement(int minQuantity = 1, int maxQuantity = 1)
-    {
-        return new CategoryRequirement
-        {
-            type = RequirementType.FamilyAndSubFamily,
-            targetFamily = IngredientFamily.Natural,
-            targetSubFamily = IngredientSubFamily.Mineral,
-            minCount = minQuantity,
-            maxCount = maxQuantity
-        };
-    }
-
-    private CategoryRequirement NaturalPlantRequirement(int minQuantity = 1, int maxQuantity = 1)
-    {
-        return new CategoryRequirement
-        {
-            type = RequirementType.FamilyAndSubFamily,
-            targetFamily = IngredientFamily.Natural,
-            targetSubFamily = IngredientSubFamily.Plant,
-            minCount = minQuantity,
-            maxCount = maxQuantity
-        };
-    }
-
-    private CategoryRequirement MagicAnimalRequirement(int minQuantity = 1, int maxQuantity = 1)
-    {
-        return new CategoryRequirement
-        {
-            type = RequirementType.FamilyAndSubFamily,
-            targetFamily = IngredientFamily.Magic,
-            targetSubFamily = IngredientSubFamily.Animal,
-            minCount = minQuantity,
-            maxCount = maxQuantity
-        };
-    }
-
-    private CategoryRequirement MagicMineralRequirement(int minQuantity = 1, int maxQuantity = 1)
-    {
-        return new CategoryRequirement
-        {
-            type = RequirementType.FamilyAndSubFamily,
-            targetFamily = IngredientFamily.Magic,
-            targetSubFamily = IngredientSubFamily.Mineral,
-            minCount = minQuantity,
-            maxCount = maxQuantity
-        };
     }
 }

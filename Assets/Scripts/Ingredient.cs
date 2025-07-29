@@ -17,20 +17,6 @@ public class Ingredient : ScriptableObject
     // Property to access the ingredient name
     public string IngredientName => ingredientName;
     
-    // Method to set ingredient name (validates against constants)
-    public void SetIngredientName(string name)
-    {
-        if (IngredientNames.IsValidIngredientName(name))
-        {
-            ingredientName = name;
-        }
-        else
-        {
-            Debug.LogWarning($"Invalid ingredient name: {name}. Using default value.");
-            ingredientName = IngredientNames.FLOWER; // Default fallback
-        }
-    }
-    
     void OnValidate()
     {
         // Auto-fix invalid ingredient names from display names to constants

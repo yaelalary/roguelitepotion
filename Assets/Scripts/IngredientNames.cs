@@ -6,34 +6,44 @@ using UnityEngine;
 /// </summary>
 public static class IngredientNames
 {
-    // Natural Ingredients - Plants
-    public const string FLOWER = "flower";
-    public const string LEAF = "leaf";
+    // Magic Ingredients - Plants
     public const string ILLUSION_HERB = "illusion_herb";
     public const string MIST_SEED = "mist_seed";
     
-    // Natural Ingredients - Animals
-    public const string CAT_HAIR = "cat_hair";
-    public const string SNAKE_VENOM = "snake_venom";
+    // Magic Ingredients - Animals
     public const string PHOENIX_FEATHER = "phoenix_feather";
     public const string UNICORN_HAIR = "unicorn_hair";
     
     // Magic Ingredients - Minerals
-    public const string AMETHYST = "amethyst";
     public const string DREAMSTONE = "dreamstone";
     public const string STARDUST = "stardust";
-    public const string SULFUR = "sulfur";
     
+    // Natural Ingredients - Plants
+    public const string FLOWER = "flower";
+    public const string LEAF = "leaf";
+
+    // Natural Ingredients - Animals
+    public const string CAT_HAIR = "cat_hair";
+    public const string SNAKE_VENOM = "snake_venom";
+
+    // Natural Ingredients - Minerals
+    public const string AMETHYST = "amethyst";
+    public const string SULFUR = "sulfur";
+
     /// <summary>
     /// Returns all ingredient names in an array
+    /// Order: Magic (Plant, Animal, Mineral), then Natural (Plant, Animal, Mineral)
     /// </summary>
     public static string[] GetAllIngredientNames()
     {
         return new string[]
         {
-            FLOWER, LEAF, ILLUSION_HERB, MIST_SEED,
-            CAT_HAIR, SNAKE_VENOM, PHOENIX_FEATHER, UNICORN_HAIR,
-            AMETHYST, DREAMSTONE, STARDUST, SULFUR
+            ILLUSION_HERB, MIST_SEED,
+            PHOENIX_FEATHER, UNICORN_HAIR,
+            DREAMSTONE, STARDUST,
+            FLOWER, LEAF,
+            CAT_HAIR, SNAKE_VENOM,
+            AMETHYST, SULFUR
         };
     }
     

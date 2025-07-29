@@ -24,7 +24,10 @@ public class Basket2D : MonoBehaviour
         for (int i = 0; i < ingredientsToDraw; i++)
         {
             Ingredient ingredient = deckManager.DrawIngredient();
-            if (ingredient == null) break;
+            if (ingredient == null) {
+                Debug.Log("No more ingredients in deck!");
+                break;
+            }
             CreateIngredient(ingredient, i);
         }
     }

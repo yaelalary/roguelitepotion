@@ -1,12 +1,13 @@
 using UnityEngine;
 using System.Collections.Generic;
 
+// Force recompilation - ID system with initials
 [System.Serializable]
 public class PotionRecipe
 {
     public string potionName = "";
+    public string potionId = ""; // Unique ID based on ingredients
     public string description = "";
-    public Sprite potionIcon;
     
     [Header("Recipe Requirements")]
     public int minIngredients = 1;
@@ -50,15 +51,6 @@ public class PotionRecipe
         
         return true;
     }
-    
-    /// <summary>
-    /// Calculate a score for recipe comparison based on level and sublevel
-    /// </summary>
-    public int CalculateScore(List<Ingredient> ingredients)
-    {
-        // Score based on potion level (higher = better)
-        return level * 100 + subLevel;
-    }
 }
 
 [System.Serializable]
@@ -74,12 +66,10 @@ public class CategoryRequirement
     {
         if (ingredients == null) return false;
         
-        int count = 0;
-        
+        int count = 0; 
         foreach (var ingredient in ingredients)
         {
             bool matches = false;
-            
             switch (type)
             {
                 case RequirementType.Family:
