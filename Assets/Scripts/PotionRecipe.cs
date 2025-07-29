@@ -12,7 +12,6 @@ public class PotionRecipe
     [Header("Recipe Requirements")]
     public int minIngredients = 1;
     public int maxIngredients = 4;
-    // Recipes can now have flexible magic ingredient requirements
     
     [Header("Category Requirements")]
     public List<CategoryRequirement> categoryRequirements = new List<CategoryRequirement>();
