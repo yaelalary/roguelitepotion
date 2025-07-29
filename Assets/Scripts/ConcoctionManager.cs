@@ -11,6 +11,8 @@ public class ConcoctionManager : MonoBehaviour
     
     [Header("Game References")]
     public Basket2D basket;
+    public GameObject potionPrefab; // Prefab of the potion to instantiate
+    public Transform[] shelves = new Transform[3]; // Array of 3 shelf transforms
     
     private List<IngredientPrefab> selectedIngredients = new List<IngredientPrefab>();
     private List<PotionRecipe> recipes = new List<PotionRecipe>();
@@ -183,6 +185,7 @@ public class ConcoctionManager : MonoBehaviour
         }
         
         // TODO: Add potion to inventory, update score, show success animation
+        CreatePotionOnShelf();
         
         // Remove used ingredients and hide button
         RemoveUsedIngredients();
@@ -206,6 +209,46 @@ public class ConcoctionManager : MonoBehaviour
         return new List<IngredientPrefab>(selectedIngredients);
     }
 
+    void CreatePotionOnShelf()
+    {
+        if (currentSelectedRecipe == null || potionPrefab == null) return;
+        
+        // Find first available shelf
+        Transform availableShelf = FindFirstAvailableShelf();
+        if (availableShelf == null)
+        {
+            Debug.Log("All shelves are full! Cannot create potion.");
+            // TODO: Handle full shelves (maybe show message to player)
+            return;
+        }
+        
+        // Create potion on the shelf (centered on parent)
+        GameObject newPotion = Instantiate(potionPrefab, availableShelf);
+        
+        // TODO: Set potion properties based on currentSelectedRecipe
+        // For example: newPotion.GetComponent<Potion>().SetRecipe(currentSelectedRecipe);
+        
+        Debug.Log($"Potion '{currentSelectedRecipe.potionName}' created on shelf!");
+    }
+    
+    Transform FindFirstAvailableShelf()
+    {
+        for (int i = 0; i < shelves.Length; i++)
+        {
+            if (shelves[i] != null && IsShelfEmpty(shelves[i]))
+            {
+                return shelves[i];
+            }
+        }
+        return null; // All shelves are full or not assigned
+    }
+    
+    bool IsShelfEmpty(Transform shelf)
+    {
+        // Check if shelf has any children (potions)
+        return shelf.childCount == 0;
+    }
+    
     // Helper methods for creating requirements
     private CategoryRequirement MagicPlantRequirement(int minQuantity = 1, int maxQuantity = 1)
     {
