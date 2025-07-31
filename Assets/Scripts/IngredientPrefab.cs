@@ -1,4 +1,5 @@
 using UnityEngine;
+using DG.Tweening;
 
 public class IngredientPrefab : MonoBehaviour
 {
@@ -8,6 +9,8 @@ public class IngredientPrefab : MonoBehaviour
     
     [Header("Selection Settings")]
     public float selectionOffset = 0.5f;
+    public float animationDuration = 0.3f;
+    public Ease animationEase = Ease.OutBack;
     
     private bool isSelected = false;
     private Vector3 originalPosition;
@@ -44,6 +47,7 @@ public class IngredientPrefab : MonoBehaviour
     public void ToggleSelection()
     {
         isSelected = !isSelected;
+        
         UpdateVisuals();
         
         if (concoctionManager != null)
@@ -55,8 +59,16 @@ public class IngredientPrefab : MonoBehaviour
     
     void UpdateVisuals()
     {
-        if (isSelected) transform.position = originalPosition + new Vector3(0, selectionOffset, 0);
-        else transform.position = originalPosition;
+        // Arrêter toute animation en cours pour éviter les conflits
+        transform.DOKill();
+        
+        Vector3 targetPosition = isSelected ? 
+            originalPosition + new Vector3(0, selectionOffset, 0) : 
+            originalPosition;
+            
+        // Animation fluide vers la position cible
+        transform.DOMove(targetPosition, animationDuration)
+            .SetEase(animationEase);
     }
 
     public void SetSelected(bool selected)
@@ -69,5 +81,11 @@ public class IngredientPrefab : MonoBehaviour
     {
         originalPosition = newOriginalPosition;
         if (!isSelected) transform.position = originalPosition;
+    }
+    
+    void OnDestroy()
+    {
+        // Nettoyer toutes les animations DOTween de cet objet
+        transform.DOKill();
     }
 }
