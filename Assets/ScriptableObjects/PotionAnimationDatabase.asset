@@ -12,4 +12,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 18147ea6929f8044aa116d1029875676, type: 3}
   m_Name: PotionAnimationDatabase
   m_EditorClassIdentifier: 
-  potionMappings: []
+  magicTypes:
+  - _magicType: 
+    _description: 
+    animatorController: {fileID: 9100000, guid: 63fb9314eee375d45a804ec32ba9886d, type: 2}
+    defaultSprite: {fileID: 0}
+  - _magicType: 
+    _description: 
+    animatorController: {fileID: 9100000, guid: 8587d3a573531fd4b87dbcf3e5c799e7, type: 2}
+    defaultSprite: {fileID: 0}
+  - _magicType: 
+    _description: 
+    animatorController: {fileID: 9100000, guid: 6d5319fb7e53b1042a4aa6f5fbc2c355, type: 2}
+    defaultSprite: {fileID: 0}
+  - _magicType: 
+    _description: 
+    animatorController: {fileID: 9100000, guid: 1e9e65efd3a1c2649bf48f397670b838, type: 2}
+    defaultSprite: {fileID: 0}
+  - _magicType: 
+    _description: 
+    animatorController: {fileID: 9100000, guid: 5134e23fad3c70f42b46cc1e07103ddc, type: 2}
+    defaultSprite: {fileID: 0}
+  - _magicType: 
+    _description: 
+    animatorController: {fileID: 9100000, guid: cbd4cd67dc3399b4fa1f67de7554db6b, type: 2}
+    defaultSprite: {fileID: 0}
+  - _magicType: 
+    _description: 
+    animatorController: {fileID: 9100000, guid: 87158a99d2b66bf4b9804b716b7674cd, type: 2}
+    defaultSprite: {fileID: 0}

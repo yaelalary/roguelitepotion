@@ -780,11 +780,12 @@ MonoBehaviour:
   concoctButton: {fileID: 2077963256}
   recipeNameText: {fileID: 122281416}
   basket: {fileID: 1969720585}
-  potionPrefab: {fileID: 5930257491574390458, guid: fbade66c46438a34399274e63cc0b7bb, type: 3}
+  animatedPotionPrefab: {fileID: 2539183703523634919, guid: 5fc205eda1e2b4c41b3b73eb94dc0dc1, type: 3}
   shelves:
   - {fileID: 6055853057240785632}
   - {fileID: 185041150}
   - {fileID: 135083615}
+  animationDatabase: {fileID: 11400000, guid: 57aac65a68c20694986981b0fec928c0, type: 2}
 --- !u!1 &1702566768
 GameObject:
   m_ObjectHideFlags: 0
