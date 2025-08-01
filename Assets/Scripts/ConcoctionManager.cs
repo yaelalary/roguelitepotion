@@ -11,8 +11,11 @@ public class ConcoctionManager : MonoBehaviour
     
     [Header("Game References")]
     public Basket2D basket;
-    public GameObject potionPrefab; // Prefab of the potion to instantiate
+    public GameObject animatedPotionPrefab;
     public Transform[] shelves = new Transform[3]; // Array of 3 shelf transforms
+    
+    [Header("Animation Database")]
+    public PotionAnimationDatabase animationDatabase;
     
     private List<IngredientPrefab> selectedIngredients = new List<IngredientPrefab>();
     private List<PotionRecipe> recipes = new List<PotionRecipe>();
@@ -147,11 +150,7 @@ public class ConcoctionManager : MonoBehaviour
         if (selectedIngredients.Count == 0) return null;
         
         // Convert selected ingredients to ingredient list
-        List<Ingredient> ingredients = new List<Ingredient>();
-        foreach (var ingredientPrefab in selectedIngredients)
-        {
-            ingredients.Add(ingredientPrefab.GetIngredient());
-        }
+        List<Ingredient> ingredients = GetSelectedIngredientsAsIngredients();
         
         // Return the FIRST recipe that matches (most specific due to ordering)
         foreach (PotionRecipe recipe in recipes)
@@ -170,12 +169,7 @@ public class ConcoctionManager : MonoBehaviour
         if (selectedIngredients.Count == 0 || currentSelectedRecipe == null) return;
         
         // Generate unique potion ID based on ingredients used
-        List<Ingredient> ingredients = new List<Ingredient>();
-        foreach (var ingredientPrefab in selectedIngredients)
-        {
-            ingredients.Add(ingredientPrefab.GetIngredient());
-        }
-        string potionId = PotionUtils.GeneratePotionId(ingredients);
+        string potionId = PotionUtils.GeneratePotionId(GetSelectedIngredientsAsIngredients());
         
         Debug.Log("=== CONCOCTING POTION ===");
         Debug.Log($"Potion ID: {potionId}");
@@ -195,9 +189,14 @@ public class ConcoctionManager : MonoBehaviour
         UpdateButtonVisibility();
     }
     
-    public List<IngredientPrefab> GetSelectedIngredients()
+    List<Ingredient> GetSelectedIngredientsAsIngredients()
     {
-        return new List<IngredientPrefab>(selectedIngredients);
+        List<Ingredient> ingredients = new List<Ingredient>();
+        foreach (var ingredientPrefab in selectedIngredients)
+        {
+            ingredients.Add(ingredientPrefab.GetIngredient());
+        }
+        return ingredients;
     }
 
     void CreatePotionOnShelf(string potionId)
@@ -209,20 +208,20 @@ public class ConcoctionManager : MonoBehaviour
         if (availableShelf == null)
         {
             Debug.Log("All shelves are full! Cannot create potion.");
-            // TODO: Handle full shelves (maybe show message to player)
             return;
         }
         
-        // Create potion on the shelf (centered on parent)
-        GameObject newPotion = Instantiate(potionPrefab, availableShelf);
-        // Set the potion's name to include the unique ID
+        List<Ingredient> ingredients = GetSelectedIngredientsAsIngredients();
+        PotionAnimationMapping mapping = animationDatabase?.GetMappingForIngredients(ingredients);
+        
+        GameObject newPotion = Instantiate(animatedPotionPrefab, availableShelf);
         newPotion.name = $"Potion_{potionId}";
         
-        // Set potion properties if it has a Potion component
-        Potion potionComponent = newPotion.GetComponent<Potion>();
-        potionComponent.SetRecipe(currentSelectedRecipe, potionId);
-
-        Debug.Log($"Potion '{currentSelectedRecipe.potionName}' (ID: {potionId}) created on shelf!");
+        AnimatedPotion animatedPotionComponent = newPotion.GetComponent<AnimatedPotion>();
+        if (animatedPotionComponent != null)
+        {
+            animatedPotionComponent.SetupPotion(ingredients, currentSelectedRecipe, mapping);
+        }
     }
     
     Transform FindFirstAvailableShelf()
