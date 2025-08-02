@@ -19,7 +19,6 @@ public class PotionTooltip : MonoBehaviour
     
     [Header("Positioning")]
     [SerializeField] private Vector3 offset = new Vector3(-3.5f, 0.5f, 0f); // Positioned to the left of the potion
-    [SerializeField] private float backgroundPadding = 0.2f;
     
     private AnimatedPotion potionData;
     private bool isVisible = false;
