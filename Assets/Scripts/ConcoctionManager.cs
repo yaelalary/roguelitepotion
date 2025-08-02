@@ -238,7 +238,15 @@ public class ConcoctionManager : MonoBehaviour
     
     bool IsShelfEmpty(Transform shelf)
     {
-        // Check if shelf has any children (potions)
-        return shelf.childCount == 0;
+        // Check if shelf has any children that are potions (ignore sprite children)
+        int potionCount = 0;
+        for (int i = 0; i < shelf.childCount; i++)
+        {
+            if (shelf.GetChild(i).GetComponent<AnimatedPotion>() != null)
+            {
+                potionCount++;
+            }
+        }
+        return potionCount == 0;
     }
 }

@@ -22,15 +22,21 @@ public class AnimatedPotion : MonoBehaviour
     [SerializeField] private SpriteRenderer spriteRenderer;
     [SerializeField] private Animator animator;
     
+    [Header("Tooltip")]
+    [SerializeField] private PotionTooltip tooltip;
+    
     private PotionAnimationMapping currentMapping;
     
     void Awake()
     {
-        // Auto-assign components
-        if (spriteRenderer == null)
-            spriteRenderer = GetComponent<SpriteRenderer>();
-        if (animator == null)
-            animator = GetComponent<Animator>();
+        // Auto-assign components from PotionSprite child
+        Transform potionSpriteChild = transform.Find("PotionSprite");
+
+        spriteRenderer = potionSpriteChild.GetComponent<SpriteRenderer>();
+        animator = potionSpriteChild.GetComponent<Animator>();
+        
+        if (tooltip == null)
+            tooltip = GetComponent<PotionTooltip>();
     }
     
     /// <summary>
@@ -54,6 +60,7 @@ public class AnimatedPotion : MonoBehaviour
         
         potionName = recipe?.potionName ?? $"Potion {mapping.MagicType}";
         SetupAnimation(mapping);
+        SetupTooltip();
         
         Debug.Log($"Potion created: {potionName} (ID: {potionId})");
     }
@@ -72,6 +79,41 @@ public class AnimatedPotion : MonoBehaviour
             animator.runtimeAnimatorController = mapping.animatorController;
             
             Debug.Log($"Controller assigned: {mapping.animatorController.name}");
+        }
+    }
+    
+    /// <summary>
+    /// Setup the tooltip component
+    /// </summary>
+    private void SetupTooltip()
+    {
+        if (tooltip == null)
+        {
+            tooltip = gameObject.AddComponent<PotionTooltip>();
+        }
+        
+        tooltip.Initialize(this);
+    }
+    
+    /// <summary>
+    /// Called when mouse enters the potion collider
+    /// </summary>
+    void OnMouseEnter()
+    {
+        if (tooltip != null)
+        {
+            tooltip.ShowTooltip();
+        }
+    }
+    
+    /// <summary>
+    /// Called when mouse exits the potion collider
+    /// </summary>
+    void OnMouseExit()
+    {
+        if (tooltip != null)
+        {
+            tooltip.HideTooltip();
         }
     }
     
