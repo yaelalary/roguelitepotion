@@ -18,7 +18,7 @@ public class PotionTooltip : MonoBehaviour
     [SerializeField] private Image backgroundImage;
     
     [Header("Positioning")]
-    [SerializeField] private Vector3 offset = new Vector3(-1.5f, 0f, 0f); // Will be calculated based on potion height
+    [SerializeField] private Vector3 offset = new Vector3(-3.5f, 0.5f, 0f); // Positioned to the left of the potion
     [SerializeField] private float backgroundPadding = 0.2f;
     
     private AnimatedPotion potionData;
@@ -52,6 +52,8 @@ public class PotionTooltip : MonoBehaviour
         if (potionData == null || tooltipPanel == null) return;
         
         UpdateTooltipContent();
+        tooltipCanvas.transform.localPosition = offset;
+        
         tooltipPanel.SetActive(true);
         isVisible = true;
     }
@@ -127,11 +129,11 @@ public class PotionTooltip : MonoBehaviour
         // Set a very small scale for the entire canvas
         canvasGO.transform.localScale = Vector3.one * 0.02f;
         
-        // Set canvas anchor to the right so it positions from its right edge
+        // Set canvas anchor to the left so it positions from its left edge
         RectTransform canvasRect = canvasGO.GetComponent<RectTransform>();
-        canvasRect.anchorMin = new Vector2(1f, 0.5f); // Right center
-        canvasRect.anchorMax = new Vector2(1f, 0.5f); // Right center
-        canvasRect.pivot = new Vector2(1f, 0.5f);     // Pivot on right center
+        canvasRect.anchorMin = new Vector2(0f, 0.5f); // Left center
+        canvasRect.anchorMax = new Vector2(0f, 0.5f); // Left center
+        canvasRect.pivot = new Vector2(0f, 0.5f);     // Pivot on left center
         
         // Create background panel
         GameObject panelGO = new GameObject("TooltipPanel");
@@ -162,9 +164,7 @@ public class PotionTooltip : MonoBehaviour
         descriptionText = CreateTextElement("DescriptionText", panelGO.transform, 10, Color.gray, false);
         durationText = CreateTextElement("DurationText", panelGO.transform, 10, Color.cyan, false);
         
-        // Position canvas to the left of the potion
-        Vector3 potionHeight = Vector3.zero;
-        offset = new Vector3(-0.5f, 0.5f, 0f);
+        // Position canvas to the left of the potion using the configured offset
         canvasGO.transform.localPosition = offset;
         
         // Start hidden

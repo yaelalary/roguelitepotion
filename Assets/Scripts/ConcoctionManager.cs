@@ -8,6 +8,7 @@ public class ConcoctionManager : MonoBehaviour
     [Header("UI References")]
     public Button concoctButton;
     public TextMeshProUGUI recipeNameText;
+    public Toggle keepExistingPotionsToggle; // Checkbox to keep existing potions
     
     [Header("Game References")]
     public Basket2D basket;
@@ -207,7 +208,16 @@ public class ConcoctionManager : MonoBehaviour
         Transform availableShelf = FindFirstAvailableShelf();
         if (availableShelf == null)
         {
-            Debug.Log("All shelves are full! Cannot create potion.");
+            // Check if user wants to keep existing potions
+            if (keepExistingPotionsToggle != null && keepExistingPotionsToggle.isOn)
+            {
+                Debug.Log("All shelves are full! Keeping existing potions as requested.");
+                ShowShelvesFullMessage();
+                return;
+            }
+            
+            Debug.Log("All shelves are full! Proposing potion replacement...");
+            StartPotionReplacementProcess(potionId);
             return;
         }
         
@@ -249,4 +259,157 @@ public class ConcoctionManager : MonoBehaviour
         }
         return potionCount == 0;
     }
+    
+    /// <summary>
+    /// Show message when shelves are full and keeping existing potions
+    /// </summary>
+    void ShowShelvesFullMessage()
+    {
+        Debug.Log("Cannot create new potion: All shelves are full and 'Keep existing potions' is enabled.");
+        // TODO: You can add a UI popup here later
+        // For now, don't consume ingredients since no potion was created
+    }
+    
+    /// <summary>
+    /// Start the potion replacement process when shelves are full
+    /// </summary>
+    void StartPotionReplacementProcess(string newPotionId)
+    {
+        Debug.Log("=== POTION REPLACEMENT MODE ===");
+        Debug.Log("All shelves are full! Click on a potion to replace it, or press ESC to cancel.");
+        
+        // Store the new potion data for later use
+        StorePendingPotionData(newPotionId);
+        
+        // Enable replacement mode on all existing potions
+        EnableReplacementModeOnPotions(true);
+        
+        // Show instruction UI (you can add a UI element later)
+        ShowReplacementInstructions(true);
+    }
+    
+    /// <summary>
+    /// Store the pending potion data while waiting for replacement choice
+    /// </summary>
+    void StorePendingPotionData(string potionId)
+    {
+        pendingPotionId = potionId;
+        pendingIngredients = GetSelectedIngredientsAsIngredients();
+        pendingRecipe = currentSelectedRecipe;
+        pendingMapping = animationDatabase?.GetMappingForIngredients(pendingIngredients);
+    }
+    
+    /// <summary>
+    /// Enable or disable replacement mode on all potions
+    /// </summary>
+    void EnableReplacementModeOnPotions(bool enable)
+    {
+        foreach (Transform shelf in shelves)
+        {
+            if (shelf != null)
+            {
+                for (int i = 0; i < shelf.childCount; i++)
+                {
+                    AnimatedPotion potion = shelf.GetChild(i).GetComponent<AnimatedPotion>();
+                    if (potion != null)
+                    {
+                        potion.SetReplacementMode(enable);
+                    }
+                }
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Show or hide replacement instructions
+    /// </summary>
+    void ShowReplacementInstructions(bool show)
+    {
+        // For now just debug log, you can add UI later
+        if (show)
+        {
+            Debug.Log("INSTRUCTIONS: Click on any potion to replace it with the new one, or press ESC to keep all potions.");
+        }
+    }
+    
+    /// <summary>
+    /// Called when a potion is clicked during replacement mode
+    /// </summary>
+    public void OnPotionSelectedForReplacement(AnimatedPotion potionToReplace)
+    {
+        if (pendingRecipe == null) return;
+        
+        Debug.Log($"Replacing potion: {potionToReplace.potionName} with new potion: {pendingRecipe.potionName}");
+        
+        // Get the shelf of the potion to replace
+        Transform shelf = potionToReplace.transform.parent;
+        
+        // Destroy the old potion
+        DestroyImmediate(potionToReplace.gameObject);
+        
+        // Create the new potion on the same shelf
+        GameObject newPotion = Instantiate(animatedPotionPrefab, shelf);
+        newPotion.name = $"Potion_{pendingPotionId}";
+        
+        AnimatedPotion animatedPotionComponent = newPotion.GetComponent<AnimatedPotion>();
+        if (animatedPotionComponent != null)
+        {
+            animatedPotionComponent.SetupPotion(pendingIngredients, pendingRecipe, pendingMapping);
+        }
+        
+        // End replacement mode
+        EndReplacementMode();
+        
+        // Remove used ingredients
+        RemoveUsedIngredients();
+    }
+    
+    /// <summary>
+    /// Cancel the replacement process
+    /// </summary>
+    public void CancelReplacement()
+    {
+        Debug.Log("Potion replacement cancelled. Keeping all existing potions.");
+        EndReplacementMode();
+        
+        // Don't remove ingredients since the potion wasn't created
+    }
+    
+    /// <summary>
+    /// End replacement mode and clean up
+    /// </summary>
+    void EndReplacementMode()
+    {
+        EnableReplacementModeOnPotions(false);
+        ShowReplacementInstructions(false);
+        ClearPendingPotionData();
+    }
+    
+    /// <summary>
+    /// Clear stored pending potion data
+    /// </summary>
+    void ClearPendingPotionData()
+    {
+        pendingPotionId = null;
+        pendingIngredients = null;
+        pendingRecipe = null;
+        pendingMapping = null;
+    }
+    
+    /// <summary>
+    /// Handle ESC key to cancel replacement
+    /// </summary>
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape) && pendingRecipe != null)
+        {
+            CancelReplacement();
+        }
+    }
+    
+    // Pending potion data for replacement mode
+    private string pendingPotionId;
+    private List<Ingredient> pendingIngredients;
+    private PotionRecipe pendingRecipe;
+    private PotionAnimationMapping pendingMapping;
 }
