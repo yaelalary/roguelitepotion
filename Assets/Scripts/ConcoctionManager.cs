@@ -188,15 +188,15 @@ public class ConcoctionManager : MonoBehaviour
         isAnimating = true;
         UpdateButtonVisibility();
         
+        // Disable ingredient interactions during potion creation
+        SetIngredientInteractionsEnabled(false);
+        
         // Store ingredients for replacement BEFORE starting animation
         List<IngredientPrefab> ingredientsToReplace = new List<IngredientPrefab>(selectedIngredients);
         
         // Sort ingredients by X position (leftmost first)
         List<IngredientPrefab> sortedIngredients = new List<IngredientPrefab>(selectedIngredients);
         sortedIngredients.Sort((a, b) => a.transform.position.x.CompareTo(b.transform.position.x));
-        
-        Debug.Log($"Animating {sortedIngredients.Count} ingredients to cauldron...");
-        
         // Animate each ingredient one by one
         foreach (var ingredient in sortedIngredients)
         {
@@ -206,18 +206,17 @@ public class ConcoctionManager : MonoBehaviour
         
         // All ingredients animated, now create the potion
         Debug.Log($"All ingredients consumed! Creating potion {potionId}");
-        yield return StartCoroutine(CreatePotionFromCauldron(potionId));
+        yield return StartCoroutine(CreatePotionFromCauldron(potionId, ingredientsToReplace));
         
-        // Replace used ingredients with new ones from basket AFTER animation
-        Debug.Log("Replacing ingredients with new ones...");
-        basket.ReplaceIngredients(ingredientsToReplace);
-        
-        // Clean up
+        // Clean up (ingredients are replaced in CreatePotionFromCauldron after potion is placed)
         selectedIngredients.Clear();
         currentSelectedRecipe = null;
         UpdateRecipeDisplay();
         isAnimating = false;
         UpdateButtonVisibility();
+        
+        // Re-enable ingredient interactions after potion creation is complete
+        // SetIngredientInteractionsEnabled(true);
     }
     
     /// <summary>
@@ -244,14 +243,14 @@ public class ConcoctionManager : MonoBehaviour
         // Wait for animation to complete
         yield return moveTween.WaitForCompletion();
     }
-    
+
     /// <summary>
     /// Create potion at cauldron and animate it to the shelf
     /// </summary>
-    IEnumerator CreatePotionFromCauldron(string potionId)
+    IEnumerator CreatePotionFromCauldron(string potionId, List<IngredientPrefab> ingredientsToReplace)
     {
         if (currentSelectedRecipe == null) yield break;
-        
+
         // Find first available shelf
         Transform availableShelf = FindFirstAvailableShelf();
         if (availableShelf == null)
@@ -260,57 +259,67 @@ public class ConcoctionManager : MonoBehaviour
             if (keepExistingPotionsToggle.isOn)
             {
                 Debug.Log("All shelves are full! Keeping existing potions as requested.");
-                ShowShelvesFullMessage();
+                // Replace ingredients since no potion was created
+                Debug.Log("Replacing ingredients with new ones...");
+                basket.ReplaceIngredients(ingredientsToReplace);
+                SetIngredientInteractionsEnabled(true);
                 yield break;
             }
-
-            Debug.Log("All shelves are full! Creating potion at cauldron and waiting for replacement choice...");
-            CreatePotionAtCauldronForReplacement(potionId);
-            yield break;
+            else
+            {
+                Debug.Log("All shelves are full! Creating potion at cauldron and waiting for replacement choice...");
+                CreatePotionAtCauldronForReplacement(potionId, ingredientsToReplace);
+                yield break;
+            }
         }
-        
+
         List<Ingredient> ingredients = GetSelectedIngredientsAsIngredients();
         PotionAnimationMapping mapping = animationDatabase?.GetMappingForIngredients(ingredients);
-        
+
         // Create potion as child of shelf but position it at cauldron
         GameObject newPotion = Instantiate(animatedPotionPrefab, availableShelf);
         newPotion.name = $"Potion_{potionId}";
-        
+
         // Position at cauldron (world position)
         newPotion.transform.position = cauldron.position;
-        
+
         // Setup potion data
         AnimatedPotion animatedPotionComponent = newPotion.GetComponent<AnimatedPotion>();
         animatedPotionComponent.SetupPotion(ingredients, currentSelectedRecipe, mapping);
-        
+
         // Disable interactions while potion is moving from cauldron to shelf
         animatedPotionComponent.SetInteractionsEnabled(false);
-        
+
         // Wait a moment for the potion to appear
         yield return new WaitForSeconds(0.1f);
-        
+
         // Animate potion to shelf position (local position relative to shelf)
         Vector3 shelfLocalPosition = Vector3.zero; // Center of the shelf
         Tween potionMoveTween = newPotion.transform.DOLocalMove(shelfLocalPosition, potionAnimationDuration)
             .SetEase(potionAnimationEase);
-            
+
         // Optional: Add some scaling effect during movement
         Tween potionScaleTween = newPotion.transform.DOScale(Vector3.one * 1.2f, potionAnimationDuration * 0.5f)
             .SetEase(Ease.OutQuad)
             .SetLoops(2, LoopType.Yoyo);
-        
+
         // Wait for animation to complete
         yield return potionMoveTween.WaitForCompletion();
-        
+
         // Re-enable interactions now that potion is on shelf
         animatedPotionComponent.SetInteractionsEnabled(true);
-        
+
+        // Replace used ingredients with new ones AFTER potion is successfully placed on shelf
+        Debug.Log("Replacing ingredients with new ones...");
+        basket.ReplaceIngredients(ingredientsToReplace);
+
         Debug.Log($"Potion {potionId} successfully created and placed on shelf!");
+        SetIngredientInteractionsEnabled(true);
     }
     
     void RemoveUsedIngredients()
     {
-        basket.ReplaceIngredients(selectedIngredients);
+        // Note: ingredients are replaced elsewhere when potion is finalized
         selectedIngredients.Clear();
         currentSelectedRecipe = null; // Reset selected recipe
         UpdateRecipeDisplay();
@@ -325,37 +334,6 @@ public class ConcoctionManager : MonoBehaviour
             ingredients.Add(ingredientPrefab.GetIngredient());
         }
         return ingredients;
-    }
-
-    void CreatePotionOnShelf(string potionId)
-    {
-        if (currentSelectedRecipe == null) return;
-        
-        // Find first available shelf
-        Transform availableShelf = FindFirstAvailableShelf();
-        if (availableShelf == null)
-        {
-            // Check if user wants to keep existing potions
-            if (keepExistingPotionsToggle.isOn)
-            {
-                Debug.Log("All shelves are full! Keeping existing potions as requested.");
-                ShowShelvesFullMessage();
-                return;
-            }
-
-            Debug.Log("All shelves are full! Proposing potion replacement...");
-            StartPotionReplacementProcess(potionId);
-            return;
-        }
-        
-        List<Ingredient> ingredients = GetSelectedIngredientsAsIngredients();
-        PotionAnimationMapping mapping = animationDatabase?.GetMappingForIngredients(ingredients);
-        
-        GameObject newPotion = Instantiate(animatedPotionPrefab, availableShelf);
-        newPotion.name = $"Potion_{potionId}";
-        
-        AnimatedPotion animatedPotionComponent = newPotion.GetComponent<AnimatedPotion>();
-        animatedPotionComponent.SetupPotion(ingredients, currentSelectedRecipe, mapping);
     }
     
     Transform FindFirstAvailableShelf()
@@ -387,7 +365,7 @@ public class ConcoctionManager : MonoBehaviour
     /// <summary>
     /// Create potion at cauldron for replacement mode - potion stays at cauldron
     /// </summary>
-    void CreatePotionAtCauldronForReplacement(string potionId)
+    void CreatePotionAtCauldronForReplacement(string potionId, List<IngredientPrefab> ingredientsToReplace)
     {
         List<Ingredient> ingredients = GetSelectedIngredientsAsIngredients();
         PotionAnimationMapping mapping = animationDatabase?.GetMappingForIngredients(ingredients);
@@ -405,7 +383,7 @@ public class ConcoctionManager : MonoBehaviour
         animatedPotionComponent.SetInteractionsEnabled(false);
         
         // Store the pending potion for replacement mode
-        StorePendingPotionData(potionId, newPotion);
+        StorePendingPotionData(potionId, newPotion, ingredientsToReplace);
         
         // Enable replacement mode on all existing potions
         EnableReplacementModeOnPotions(true);
@@ -417,43 +395,18 @@ public class ConcoctionManager : MonoBehaviour
     }
     
     /// <summary>
-    /// Show message when shelves are full and keeping existing potions
-    /// </summary>
-    void ShowShelvesFullMessage()
-    {
-        Debug.Log("Cannot create new potion: All shelves are full and 'Keep existing potions' is enabled.");
-        // TODO: You can add a UI popup here later
-        // For now, don't consume ingredients since no potion was created
-    }
-    
-    /// <summary>
-    /// Start the potion replacement process when shelves are full
-    /// </summary>
-    void StartPotionReplacementProcess(string newPotionId)
-    {
-        Debug.Log("=== POTION REPLACEMENT MODE ===");
-        Debug.Log("All shelves are full! Click on a potion to replace it, or press ESC to cancel.");
-        
-        // Store the new potion data for later use
-        StorePendingPotionData(newPotionId);
-        
-        // Enable replacement mode on all existing potions
-        EnableReplacementModeOnPotions(true);
-        
-        // Show instruction UI (you can add a UI element later)
-        ShowReplacementInstructions(true);
-    }
-    
-    /// <summary>
     /// Store the pending potion data while waiting for replacement choice
     /// </summary>
-    void StorePendingPotionData(string potionId, GameObject pendingPotionObject = null)
+    void StorePendingPotionData(string potionId, GameObject pendingPotionObject = null, List<IngredientPrefab> ingredientsToReplace = null)
     {
         pendingPotionId = potionId;
         pendingIngredients = GetSelectedIngredientsAsIngredients();
         pendingRecipe = currentSelectedRecipe;
         pendingMapping = animationDatabase?.GetMappingForIngredients(pendingIngredients);
         pendingPotionAtCauldron = pendingPotionObject;
+        pendingIngredientsToReplace = ingredientsToReplace;
+        
+        Debug.Log($"DEBUG: Stored pending potion data - ingredientsToReplace count: {ingredientsToReplace?.Count ?? 0}");
     }
     
     /// <summary>
@@ -543,7 +496,21 @@ public class ConcoctionManager : MonoBehaviour
             potionComponent.SetInteractionsEnabled(true);
         }
         
-        // End replacement mode
+        // Replace used ingredients with new ones AFTER successful replacement but BEFORE clearing data
+        Debug.Log($"DEBUG: pendingIngredientsToReplace is null? {pendingIngredientsToReplace == null}");
+        if (pendingIngredientsToReplace != null)
+        {
+            Debug.Log($"DEBUG: About to replace {pendingIngredientsToReplace.Count} ingredients");
+            Debug.Log("Replacing ingredients with new ones...");
+            basket.ReplaceIngredients(pendingIngredientsToReplace);
+            SetIngredientInteractionsEnabled(true);
+        }
+        else
+        {
+            Debug.Log("ERROR: pendingIngredientsToReplace is null - ingredients will not be replaced!");
+        }
+        
+        // End replacement mode AFTER replacing ingredients
         EndReplacementMode();
         
         // Remove used ingredients
@@ -563,9 +530,16 @@ public class ConcoctionManager : MonoBehaviour
             DestroyImmediate(pendingPotionAtCauldron);
         }
         
+        // Replace used ingredients since no potion was placed
+        // if (pendingIngredientsToReplace != null)
+        // {
+        //     Debug.Log("Replacing ingredients with new ones...");
+        //     basket.ReplaceIngredients(pendingIngredientsToReplace);
+        // }
+        
         EndReplacementMode();
         
-        // Don't remove ingredients since the potion wasn't created
+        // Don't call RemoveUsedIngredients since we're cancelling
     }
     
     /// <summary>
@@ -576,6 +550,9 @@ public class ConcoctionManager : MonoBehaviour
         EnableReplacementModeOnPotions(false);
         ShowReplacementInstructions(false);
         ClearPendingPotionData();
+        
+        // Re-enable ingredient interactions when replacement mode ends
+        SetIngredientInteractionsEnabled(true);
     }
     
     /// <summary>
@@ -583,11 +560,13 @@ public class ConcoctionManager : MonoBehaviour
     /// </summary>
     void ClearPendingPotionData()
     {
+        Debug.Log("DEBUG: Clearing pending potion data");
         pendingPotionId = null;
         pendingIngredients = null;
         pendingRecipe = null;
         pendingMapping = null;
         pendingPotionAtCauldron = null;
+        pendingIngredientsToReplace = null;
     }
     
     /// <summary>
@@ -607,4 +586,28 @@ public class ConcoctionManager : MonoBehaviour
     private PotionRecipe pendingRecipe;
     private PotionAnimationMapping pendingMapping;
     private GameObject pendingPotionAtCauldron; // The actual potion GameObject waiting at cauldron
+    private List<IngredientPrefab> pendingIngredientsToReplace; // Ingredients to replace when potion is finalized
+    
+    /// <summary>
+    /// Enable or disable ingredient interactions (colliders)
+    /// </summary>
+    void SetIngredientInteractionsEnabled(bool enabled)
+    {
+        if (basket == null) return;
+        
+        // Find all ingredient prefabs in the scene
+        IngredientPrefab[] allIngredients = FindObjectsOfType<IngredientPrefab>();
+
+        Debug.Log($"DEBUG: Found {allIngredients.Length} ingredient prefabs");
+
+        foreach (IngredientPrefab ingredient in allIngredients)
+        {
+            if (ingredient.interactionCollider != null)
+            {
+                ingredient.interactionCollider.enabled = enabled;
+            }
+        }
+        
+        Debug.Log($"Ingredient interactions {(enabled ? "ENABLED" : "DISABLED")}");
+    }
 }
