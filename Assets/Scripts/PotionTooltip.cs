@@ -25,8 +25,11 @@ public class PotionTooltip : MonoBehaviour
     
     void Awake()
     {
-        // Ensure the tooltip starts hidden
-        tooltipPanel.SetActive(false);
+        // Ensure the tooltip starts hidden (only if it exists)
+        if (tooltipPanel != null)
+        {
+            tooltipPanel.SetActive(false);
+        }
     }
     
     /// <summary>
