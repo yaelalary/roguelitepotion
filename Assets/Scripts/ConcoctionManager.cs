@@ -2,6 +2,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using TMPro;
+using DG.Tweening;
+using System.Collections;
 
 public class ConcoctionManager : MonoBehaviour
 {
@@ -16,20 +18,23 @@ public class ConcoctionManager : MonoBehaviour
     public Transform[] shelves = new Transform[3]; // Array of 3 shelf transforms
     public Transform cauldron; // Reference to the cauldron transform
     
+    [Header("Animation Settings")]
+    [SerializeField] private float ingredientAnimationDuration = 1.0f;
+    [SerializeField] private float delayBetweenIngredients = 0.3f;
+    [SerializeField] private Ease ingredientAnimationEase = Ease.InOutQuad;
+    
     [Header("Animation Database")]
     public PotionAnimationDatabase animationDatabase;
     
     private List<IngredientPrefab> selectedIngredients = new List<IngredientPrefab>();
     private List<PotionRecipe> recipes = new List<PotionRecipe>();
     private PotionRecipe currentSelectedRecipe = null; // Currently selected recipe
+    private bool isAnimating = false; // Prevent multiple concoctions during animation
 
     void Start()
     {
-        if (concoctButton != null)
-        {
-            concoctButton.gameObject.SetActive(false);
-            concoctButton.onClick.AddListener(ConcoctPotion);
-        }
+        concoctButton.gameObject.SetActive(false);
+        concoctButton.onClick.AddListener(ConcoctPotion);
         
         // Initialize recipe display text
         UpdateRecipeDisplay();
@@ -122,7 +127,13 @@ public class ConcoctionManager : MonoBehaviour
     
     void UpdateButtonVisibility()
     {
-        if (concoctButton != null) concoctButton.gameObject.SetActive(selectedIngredients.Count > 0);
+        if (concoctButton != null) 
+        {
+            // Show button only if we have ingredients and we're not currently animating
+            concoctButton.gameObject.SetActive(selectedIngredients.Count > 0 && !isAnimating);
+            // Also disable interactability during animation
+            concoctButton.interactable = !isAnimating;
+        }
     }
     
     void UpdateRecipeSelection()
@@ -134,17 +145,8 @@ public class ConcoctionManager : MonoBehaviour
     
     void UpdateRecipeDisplay()
     {
-        if (recipeNameText != null)
-        {
-            if (currentSelectedRecipe != null)
-            {
-                recipeNameText.text = currentSelectedRecipe.potionName;
-            }
-            else
-            {
-                recipeNameText.text = selectedIngredients.Count > 0 ? "No valid recipe" : "Select ingredients";
-            }
-        }
+        if (currentSelectedRecipe != null) recipeNameText.text = currentSelectedRecipe.potionName;
+        else recipeNameText.text = selectedIngredients.Count > 0 ? "No valid recipe" : "Select ingredients";
     }
     
     PotionRecipe FindFirstMatchingRecipe()
@@ -157,10 +159,7 @@ public class ConcoctionManager : MonoBehaviour
         // Return the FIRST recipe that matches (most specific due to ordering)
         foreach (PotionRecipe recipe in recipes)
         {
-            if (recipe.MatchesIngredients(ingredients))
-            {
-                return recipe;
-            }
+            if (recipe.MatchesIngredients(ingredients)) return recipe;
         }
         
         return null; // No matching recipe found
@@ -168,18 +167,80 @@ public class ConcoctionManager : MonoBehaviour
 
     void ConcoctPotion()
     {
-        if (selectedIngredients.Count == 0 || currentSelectedRecipe == null) return;
+        if (selectedIngredients.Count == 0 || currentSelectedRecipe == null || isAnimating) return;
         
         // Generate unique potion ID based on ingredients used
         string potionId = PotionUtils.GeneratePotionId(GetSelectedIngredientsAsIngredients());
         
-        Debug.Log("=== CONCOCTING POTION ===");
-        Debug.Log($"Potion ID: {potionId}");
-       
+        Debug.Log($"Starting concoction of potion ID: {potionId}");
+        
+        // Start animation sequence
+        StartCoroutine(AnimateIngredientsToCauldron(potionId));
+    }
+    
+    /// <summary>
+    /// Animate ingredients to cauldron one by one, then create potion
+    /// </summary>
+    IEnumerator AnimateIngredientsToCauldron(string potionId)
+    {
+        isAnimating = true;
+        UpdateButtonVisibility();
+        
+        // Store ingredients for replacement BEFORE starting animation
+        List<IngredientPrefab> ingredientsToReplace = new List<IngredientPrefab>(selectedIngredients);
+        
+        // Sort ingredients by X position (leftmost first)
+        List<IngredientPrefab> sortedIngredients = new List<IngredientPrefab>(selectedIngredients);
+        sortedIngredients.Sort((a, b) => a.transform.position.x.CompareTo(b.transform.position.x));
+        
+        Debug.Log($"Animating {sortedIngredients.Count} ingredients to cauldron...");
+        
+        // Animate each ingredient one by one
+        foreach (var ingredient in sortedIngredients)
+        {
+            yield return StartCoroutine(AnimateIngredientToCauldron(ingredient));
+            yield return new WaitForSeconds(delayBetweenIngredients);
+        }
+        
+        // All ingredients animated, now create the potion
+        Debug.Log($"All ingredients consumed! Creating potion {potionId}");
         CreatePotionOnShelf(potionId);
         
-        // Remove used ingredients and hide button
-        RemoveUsedIngredients();
+        // Replace used ingredients with new ones from basket AFTER animation
+        Debug.Log("Replacing ingredients with new ones...");
+        basket.ReplaceIngredients(ingredientsToReplace);
+        
+        // Clean up
+        selectedIngredients.Clear();
+        currentSelectedRecipe = null;
+        UpdateRecipeDisplay();
+        isAnimating = false;
+        UpdateButtonVisibility();
+    }
+    
+    /// <summary>
+    /// Animate a single ingredient to the cauldron and destroy it
+    /// </summary>
+    IEnumerator AnimateIngredientToCauldron(IngredientPrefab ingredient)
+    {
+        if (ingredient == null || cauldron == null) yield break;
+        
+        Vector3 startPosition = ingredient.transform.position;
+        Vector3 targetPosition = cauldron.position;
+        
+        Debug.Log($"Animating {ingredient.name} from {startPosition} to {targetPosition}");
+        
+        // Animate movement to cauldron
+        Tween moveTween = ingredient.transform.DOMove(targetPosition, ingredientAnimationDuration)
+            .SetEase(ingredientAnimationEase);
+            
+        // Optional: Add some scaling effect as it approaches
+        Tween scaleTween = ingredient.transform.DOScale(Vector3.zero, ingredientAnimationDuration * 0.8f)
+            .SetDelay(ingredientAnimationDuration * 0.2f)
+            .SetEase(Ease.InBack);
+        
+        // Wait for animation to complete
+        yield return moveTween.WaitForCompletion();
     }
     
     void RemoveUsedIngredients()
@@ -210,13 +271,13 @@ public class ConcoctionManager : MonoBehaviour
         if (availableShelf == null)
         {
             // Check if user wants to keep existing potions
-            if (keepExistingPotionsToggle != null && keepExistingPotionsToggle.isOn)
+            if (keepExistingPotionsToggle.isOn)
             {
                 Debug.Log("All shelves are full! Keeping existing potions as requested.");
                 ShowShelvesFullMessage();
                 return;
             }
-            
+
             Debug.Log("All shelves are full! Proposing potion replacement...");
             StartPotionReplacementProcess(potionId);
             return;
@@ -229,10 +290,7 @@ public class ConcoctionManager : MonoBehaviour
         newPotion.name = $"Potion_{potionId}";
         
         AnimatedPotion animatedPotionComponent = newPotion.GetComponent<AnimatedPotion>();
-        if (animatedPotionComponent != null)
-        {
-            animatedPotionComponent.SetupPotion(ingredients, currentSelectedRecipe, mapping);
-        }
+        animatedPotionComponent.SetupPotion(ingredients, currentSelectedRecipe, mapping);
     }
     
     Transform FindFirstAvailableShelf()
