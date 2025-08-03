@@ -37,6 +37,10 @@ public class AnimatedPotion : MonoBehaviour
     [Header("Tooltip Collider")]
     [SerializeField] private float tooltipExtension = 4.0f; // How far to extend collider for tooltip area
     
+    [Header("Replacement Mode Animation")]
+    [SerializeField] private float shakeIntensity = 0.05f;
+    [SerializeField] private float shakeDuration = 1f;
+    
     private PotionAnimationMapping currentMapping;
     private ConcoctionManager concoctionManager;
     private Vector3 originalPosition;
@@ -44,6 +48,7 @@ public class AnimatedPotion : MonoBehaviour
     private BoxCollider2D potionCollider;
     private Vector2 originalColliderSize;
     private Vector2 originalColliderOffset;
+    private Tween shakeAnimation; // Store the shake animation reference
     
     void Awake()
     {
@@ -59,6 +64,12 @@ public class AnimatedPotion : MonoBehaviour
         concoctionManager = FindObjectOfType<ConcoctionManager>();
         originalPosition = transform.position;
         SetupTooltipCollider();
+    }
+    
+    void OnDestroy()
+    {
+        // Clean up any active shake animation
+        StopShakeAnimation();
     }
     
     /// <summary>
@@ -178,6 +189,13 @@ public class AnimatedPotion : MonoBehaviour
         if (!isHovering)
         {
             isHovering = true;
+            
+            // Stop shake animation during hover
+            if (isInReplacementMode)
+            {
+                StopShakeAnimation();
+            }
+            
             transform.DOKill(); // Stop any existing animation
             originalPosition = transform.position;
             Vector3 targetPosition = originalPosition + Vector3.up * hoverOffset;
@@ -200,7 +218,16 @@ public class AnimatedPotion : MonoBehaviour
         {
             isHovering = false;
             transform.DOKill(); // Stop any existing animation
-            transform.DOMove(originalPosition, hoverDuration).SetEase(hoverEase);
+            
+            // Animate back to original position, then restart shake if needed
+            transform.DOMove(originalPosition, hoverDuration).SetEase(hoverEase)
+                .OnComplete(() => {
+                    // Restart shake animation if still in replacement mode
+                    if (isInReplacementMode)
+                    {
+                        StartShakeAnimation();
+                    }
+                });
         }
     }
     
@@ -237,21 +264,48 @@ public class AnimatedPotion : MonoBehaviour
     {
         isInReplacementMode = enabled;
         
-        // Visual feedback for replacement mode (you can enhance this)
-        if (spriteRenderer != null)
+        // Visual feedback for replacement mode with shake animation
+        if (enabled)
         {
-            if (enabled)
+            // Only start shake animation if not currently hovering
+            if (!isHovering)
             {
-                // Make potion slightly red to indicate it can be replaced
-                spriteRenderer.color = new Color(1f, 0.8f, 0.8f, 1f);
+                StartShakeAnimation();
             }
-            else
-            {
-                // Reset to normal color
-                spriteRenderer.color = Color.white;
-            }
+            // If hovering, the shake will start when hover ends
+        }
+        else
+        {
+            // Stop shake animation
+            StopShakeAnimation();
         }
         
         Debug.Log($"Potion {potionName} replacement mode: {(enabled ? "ON" : "OFF")}");
+    }
+    
+    /// <summary>
+    /// Start the shake animation for replacement mode
+    /// </summary>
+    private void StartShakeAnimation()
+    {
+        // Stop any existing shake animation
+        StopShakeAnimation();
+        
+        // Create infinite shake animation
+        shakeAnimation = transform.DOShakePosition(shakeDuration, shakeIntensity, 10, 90, false, true)
+            .SetLoops(-1, LoopType.Restart)
+            .SetEase(Ease.InOutQuad);
+    }
+    
+    /// <summary>
+    /// Stop the shake animation
+    /// </summary>
+    private void StopShakeAnimation()
+    {
+        if (shakeAnimation != null)
+        {
+            shakeAnimation.Kill();
+            shakeAnimation = null;
+        }
     }
 }

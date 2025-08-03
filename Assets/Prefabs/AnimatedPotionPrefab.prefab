@@ -166,6 +166,8 @@ MonoBehaviour:
   hoverDuration: 0.2
   hoverEase: 27
   tooltipExtension: 4
+  shakeIntensity: 0.05
+  shakeDuration: 1
 --- !u!61 &-6170391680148685650
 BoxCollider2D:
   m_ObjectHideFlags: 0
