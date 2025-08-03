@@ -14,6 +14,7 @@ public class ConcoctionManager : MonoBehaviour
     public Basket2D basket;
     public GameObject animatedPotionPrefab;
     public Transform[] shelves = new Transform[3]; // Array of 3 shelf transforms
+    public Transform cauldron; // Reference to the cauldron transform
     
     [Header("Animation Database")]
     public PotionAnimationDatabase animationDatabase;
