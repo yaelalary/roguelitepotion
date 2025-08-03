@@ -169,19 +169,17 @@ public class AnimatedPotion : MonoBehaviour
     /// </summary>
     void OnMouseEnter()
     {
-        if (tooltip != null)
-        {
-            tooltip.ShowTooltip();
-        }
+        tooltip.ShowTooltip();
         
         // Extend collider to include tooltip area so tooltip doesn't disappear
         ExtendColliderForTooltip();
-        
+
         // Animate upward movement like ingredients
         if (!isHovering)
         {
             isHovering = true;
             transform.DOKill(); // Stop any existing animation
+            originalPosition = transform.position;
             Vector3 targetPosition = originalPosition + Vector3.up * hoverOffset;
             transform.DOMove(targetPosition, hoverDuration).SetEase(hoverEase);
         }
@@ -192,10 +190,7 @@ public class AnimatedPotion : MonoBehaviour
     /// </summary>
     void OnMouseExit()
     {
-        if (tooltip != null)
-        {
-            tooltip.HideTooltip();
-        }
+        tooltip.HideTooltip();
         
         // Reset collider to original size
         ResetColliderSize();
@@ -214,7 +209,7 @@ public class AnimatedPotion : MonoBehaviour
     /// </summary>
     void OnMouseDown()
     {
-        if (isInReplacementMode && concoctionManager != null)
+        if (isInReplacementMode)
         {
             // In replacement mode, select this potion for replacement
             concoctionManager.OnPotionSelectedForReplacement(this);

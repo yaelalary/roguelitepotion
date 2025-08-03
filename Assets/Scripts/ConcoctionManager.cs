@@ -264,8 +264,8 @@ public class ConcoctionManager : MonoBehaviour
                 yield break;
             }
 
-            Debug.Log("All shelves are full! Proposing potion replacement...");
-            StartPotionReplacementProcess(potionId);
+            Debug.Log("All shelves are full! Creating potion at cauldron and waiting for replacement choice...");
+            CreatePotionAtCauldronForReplacement(potionId);
             yield break;
         }
         
@@ -379,6 +379,35 @@ public class ConcoctionManager : MonoBehaviour
     }
     
     /// <summary>
+    /// Create potion at cauldron for replacement mode - potion stays at cauldron
+    /// </summary>
+    void CreatePotionAtCauldronForReplacement(string potionId)
+    {
+        List<Ingredient> ingredients = GetSelectedIngredientsAsIngredients();
+        PotionAnimationMapping mapping = animationDatabase?.GetMappingForIngredients(ingredients);
+        
+        // Create potion at cauldron position (no parent initially)
+        GameObject newPotion = Instantiate(animatedPotionPrefab);
+        newPotion.name = $"Potion_{potionId}";
+        newPotion.transform.position = cauldron.position;
+        
+        // Setup potion data
+        AnimatedPotion animatedPotionComponent = newPotion.GetComponent<AnimatedPotion>();
+        animatedPotionComponent.SetupPotion(ingredients, currentSelectedRecipe, mapping);
+        
+        // Store the pending potion for replacement mode
+        StorePendingPotionData(potionId, newPotion);
+        
+        // Enable replacement mode on all existing potions
+        EnableReplacementModeOnPotions(true);
+        
+        // Show instruction UI
+        ShowReplacementInstructions(true);
+        
+        Debug.Log($"Potion {potionId} created at cauldron, waiting for replacement choice...");
+    }
+    
+    /// <summary>
     /// Show message when shelves are full and keeping existing potions
     /// </summary>
     void ShowShelvesFullMessage()
@@ -409,12 +438,13 @@ public class ConcoctionManager : MonoBehaviour
     /// <summary>
     /// Store the pending potion data while waiting for replacement choice
     /// </summary>
-    void StorePendingPotionData(string potionId)
+    void StorePendingPotionData(string potionId, GameObject pendingPotionObject = null)
     {
         pendingPotionId = potionId;
         pendingIngredients = GetSelectedIngredientsAsIngredients();
         pendingRecipe = currentSelectedRecipe;
         pendingMapping = animationDatabase?.GetMappingForIngredients(pendingIngredients);
+        pendingPotionAtCauldron = pendingPotionObject;
     }
     
     /// <summary>
@@ -462,17 +492,44 @@ public class ConcoctionManager : MonoBehaviour
         // Get the shelf of the potion to replace
         Transform shelf = potionToReplace.transform.parent;
         
-        // Destroy the old potion
+        // Start the replacement sequence
+        StartCoroutine(ReplacePotionSequence(potionToReplace, shelf));
+    }
+    
+    /// <summary>
+    /// Handle the full replacement sequence with proper timing
+    /// </summary>
+    IEnumerator ReplacePotionSequence(AnimatedPotion potionToReplace, Transform shelf)
+    {
+        // First, destroy the old potion
         DestroyImmediate(potionToReplace.gameObject);
         
-        // Create the new potion on the same shelf
-        GameObject newPotion = Instantiate(animatedPotionPrefab, shelf);
-        newPotion.name = $"Potion_{pendingPotionId}";
+        // Wait a small delay to ensure the destruction is complete
+        yield return new WaitForSeconds(0.2f);
         
-        AnimatedPotion animatedPotionComponent = newPotion.GetComponent<AnimatedPotion>();
-        if (animatedPotionComponent != null)
+        // Now handle the new potion
+        if (pendingPotionAtCauldron != null)
         {
-            animatedPotionComponent.SetupPotion(pendingIngredients, pendingRecipe, pendingMapping);
+            // First set the parent without changing world position
+            pendingPotionAtCauldron.transform.SetParent(shelf, true);
+            
+            // Animate to shelf center using world coordinates
+            Vector3 shelfWorldPosition = shelf.position;
+            Tween potionMoveTween = pendingPotionAtCauldron.transform.DOMove(shelfWorldPosition, potionAnimationDuration)
+                .SetEase(potionAnimationEase);
+                
+            // Optional: Add some scaling effect during movement
+            Tween potionScaleTween = pendingPotionAtCauldron.transform.DOScale(Vector3.one * 1.2f, potionAnimationDuration * 0.5f)
+                .SetEase(Ease.OutQuad)
+                .SetLoops(2, LoopType.Yoyo);
+            
+            // Wait for animation to complete
+            yield return potionMoveTween.WaitForCompletion();
+            
+            // After animation, ensure correct local position
+            pendingPotionAtCauldron.transform.localPosition = Vector3.zero;
+            
+            Debug.Log("Pending potion successfully moved to shelf!");
         }
         
         // End replacement mode
@@ -488,6 +545,13 @@ public class ConcoctionManager : MonoBehaviour
     public void CancelReplacement()
     {
         Debug.Log("Potion replacement cancelled. Keeping all existing potions.");
+        
+        // Destroy the pending potion at cauldron if it exists
+        if (pendingPotionAtCauldron != null)
+        {
+            DestroyImmediate(pendingPotionAtCauldron);
+        }
+        
         EndReplacementMode();
         
         // Don't remove ingredients since the potion wasn't created
@@ -512,6 +576,7 @@ public class ConcoctionManager : MonoBehaviour
         pendingIngredients = null;
         pendingRecipe = null;
         pendingMapping = null;
+        pendingPotionAtCauldron = null;
     }
     
     /// <summary>
@@ -530,4 +595,5 @@ public class ConcoctionManager : MonoBehaviour
     private List<Ingredient> pendingIngredients;
     private PotionRecipe pendingRecipe;
     private PotionAnimationMapping pendingMapping;
+    private GameObject pendingPotionAtCauldron; // The actual potion GameObject waiting at cauldron
 }
