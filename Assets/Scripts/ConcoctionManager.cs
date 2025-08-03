@@ -283,6 +283,9 @@ public class ConcoctionManager : MonoBehaviour
         AnimatedPotion animatedPotionComponent = newPotion.GetComponent<AnimatedPotion>();
         animatedPotionComponent.SetupPotion(ingredients, currentSelectedRecipe, mapping);
         
+        // Disable interactions while potion is moving from cauldron to shelf
+        animatedPotionComponent.SetInteractionsEnabled(false);
+        
         // Wait a moment for the potion to appear
         yield return new WaitForSeconds(0.1f);
         
@@ -298,6 +301,9 @@ public class ConcoctionManager : MonoBehaviour
         
         // Wait for animation to complete
         yield return potionMoveTween.WaitForCompletion();
+        
+        // Re-enable interactions now that potion is on shelf
+        animatedPotionComponent.SetInteractionsEnabled(true);
         
         Debug.Log($"Potion {potionId} successfully created and placed on shelf!");
     }
@@ -394,6 +400,9 @@ public class ConcoctionManager : MonoBehaviour
         // Setup potion data
         AnimatedPotion animatedPotionComponent = newPotion.GetComponent<AnimatedPotion>();
         animatedPotionComponent.SetupPotion(ingredients, currentSelectedRecipe, mapping);
+        
+        // Disable interactions while potion is waiting at cauldron
+        animatedPotionComponent.SetInteractionsEnabled(false);
         
         // Store the pending potion for replacement mode
         StorePendingPotionData(potionId, newPotion);
@@ -529,7 +538,9 @@ public class ConcoctionManager : MonoBehaviour
             // After animation, ensure correct local position
             pendingPotionAtCauldron.transform.localPosition = Vector3.zero;
             
-            Debug.Log("Pending potion successfully moved to shelf!");
+            // Re-enable interactions now that potion is on shelf
+            AnimatedPotion potionComponent = pendingPotionAtCauldron.GetComponent<AnimatedPotion>();
+            potionComponent.SetInteractionsEnabled(true);
         }
         
         // End replacement mode

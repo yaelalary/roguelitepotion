@@ -223,6 +223,14 @@ public class AnimatedPotion : MonoBehaviour
     }
     
     /// <summary>
+    /// Enable or disable potion interactions (collider)
+    /// </summary>
+    public void SetInteractionsEnabled(bool enabled)
+    {
+        if (potionCollider != null) potionCollider.enabled = enabled;    
+    }
+    
+    /// <summary>
     /// Enable or disable replacement mode for this potion
     /// </summary>
     public void SetReplacementMode(bool enabled)
