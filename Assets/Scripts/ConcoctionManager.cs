@@ -19,9 +19,11 @@ public class ConcoctionManager : MonoBehaviour
     public Transform cauldron; // Reference to the cauldron transform
     
     [Header("Animation Settings")]
-    [SerializeField] private float ingredientAnimationDuration = 1.0f;
-    [SerializeField] private float delayBetweenIngredients = 0.3f;
+    [SerializeField] private float ingredientAnimationDuration = 0.7f;
+    [SerializeField] private float delayBetweenIngredients = 0.2f;
     [SerializeField] private Ease ingredientAnimationEase = Ease.InOutQuad;
+    [SerializeField] private float potionAnimationDuration = 0.7f;
+    [SerializeField] private Ease potionAnimationEase = Ease.InOutQuad;
     
     [Header("Animation Database")]
     public PotionAnimationDatabase animationDatabase;
@@ -204,7 +206,7 @@ public class ConcoctionManager : MonoBehaviour
         
         // All ingredients animated, now create the potion
         Debug.Log($"All ingredients consumed! Creating potion {potionId}");
-        CreatePotionOnShelf(potionId);
+        yield return StartCoroutine(CreatePotionFromCauldron(potionId));
         
         // Replace used ingredients with new ones from basket AFTER animation
         Debug.Log("Replacing ingredients with new ones...");
@@ -241,6 +243,63 @@ public class ConcoctionManager : MonoBehaviour
         
         // Wait for animation to complete
         yield return moveTween.WaitForCompletion();
+    }
+    
+    /// <summary>
+    /// Create potion at cauldron and animate it to the shelf
+    /// </summary>
+    IEnumerator CreatePotionFromCauldron(string potionId)
+    {
+        if (currentSelectedRecipe == null) yield break;
+        
+        // Find first available shelf
+        Transform availableShelf = FindFirstAvailableShelf();
+        if (availableShelf == null)
+        {
+            // Check if user wants to keep existing potions
+            if (keepExistingPotionsToggle.isOn)
+            {
+                Debug.Log("All shelves are full! Keeping existing potions as requested.");
+                ShowShelvesFullMessage();
+                yield break;
+            }
+
+            Debug.Log("All shelves are full! Proposing potion replacement...");
+            StartPotionReplacementProcess(potionId);
+            yield break;
+        }
+        
+        List<Ingredient> ingredients = GetSelectedIngredientsAsIngredients();
+        PotionAnimationMapping mapping = animationDatabase?.GetMappingForIngredients(ingredients);
+        
+        // Create potion as child of shelf but position it at cauldron
+        GameObject newPotion = Instantiate(animatedPotionPrefab, availableShelf);
+        newPotion.name = $"Potion_{potionId}";
+        
+        // Position at cauldron (world position)
+        newPotion.transform.position = cauldron.position;
+        
+        // Setup potion data
+        AnimatedPotion animatedPotionComponent = newPotion.GetComponent<AnimatedPotion>();
+        animatedPotionComponent.SetupPotion(ingredients, currentSelectedRecipe, mapping);
+        
+        // Wait a moment for the potion to appear
+        yield return new WaitForSeconds(0.1f);
+        
+        // Animate potion to shelf position (local position relative to shelf)
+        Vector3 shelfLocalPosition = Vector3.zero; // Center of the shelf
+        Tween potionMoveTween = newPotion.transform.DOLocalMove(shelfLocalPosition, potionAnimationDuration)
+            .SetEase(potionAnimationEase);
+            
+        // Optional: Add some scaling effect during movement
+        Tween potionScaleTween = newPotion.transform.DOScale(Vector3.one * 1.2f, potionAnimationDuration * 0.5f)
+            .SetEase(Ease.OutQuad)
+            .SetLoops(2, LoopType.Yoyo);
+        
+        // Wait for animation to complete
+        yield return potionMoveTween.WaitForCompletion();
+        
+        Debug.Log($"Potion {potionId} successfully created and placed on shelf!");
     }
     
     void RemoveUsedIngredients()

@@ -1270,7 +1270,12 @@ MonoBehaviour:
   - {fileID: 6055853057240785632}
   - {fileID: 185041150}
   - {fileID: 135083615}
-  cauldron: {fileID: 0}
+  cauldron: {fileID: 460985122}
+  ingredientAnimationDuration: 0.5
+  delayBetweenIngredients: 0.2
+  ingredientAnimationEase: 7
+  potionAnimationDuration: 0.5
+  potionAnimationEase: 7
   animationDatabase: {fileID: 11400000, guid: 57aac65a68c20694986981b0fec928c0, type: 2}
 --- !u!1 &1702566768
 GameObject:
