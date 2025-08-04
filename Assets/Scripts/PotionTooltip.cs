@@ -91,29 +91,9 @@ public class PotionTooltip : MonoBehaviour
     }
     
     /// <summary>
-    /// Toggle tooltip visibility
-    /// </summary>
-    public void ToggleTooltip()
-    {
-        if (isVisible)
-            HideTooltip();
-        else
-            ShowTooltip();
-    }
-    
-    /// <summary>
     /// Check if tooltip is currently visible
     /// </summary>
     public bool IsVisible => isVisible;
-    
-    /// <summary>
-    /// Update tooltip offset position
-    /// </summary>
-    public void SetOffset(Vector3 newOffset)
-    {
-        offset = newOffset;
-        tooltipCanvas.transform.localPosition = offset;
-    }
     
     /// <summary>
     /// Create the tooltip UI automatically
