@@ -133,6 +133,9 @@ public class ConcoctionManager : MonoBehaviour
         concoctButton.gameObject.SetActive(selectedIngredients.Count > 0 && !isAnimating);
         // Also disable interactability during animation
         concoctButton.interactable = !isAnimating;
+        
+        // Disable the checkbox during animation to prevent changing behavior mid-process
+        keepExistingPotionsToggle.interactable = !isAnimating;
     }
     
     void UpdateRecipeSelection()
