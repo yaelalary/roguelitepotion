@@ -11,6 +11,7 @@ public class ConcoctionManager : MonoBehaviour
     public Button concoctButton;
     public TextMeshProUGUI recipeNameText;
     public Toggle keepExistingPotionsToggle;
+    public Button discardPotionButton;
     
     [Header("Game References")]
     public Basket2D basket;
@@ -37,6 +38,9 @@ public class ConcoctionManager : MonoBehaviour
     {
         concoctButton.gameObject.SetActive(false);
         concoctButton.onClick.AddListener(ConcoctPotion);
+        
+        discardPotionButton.gameObject.SetActive(false);
+        discardPotionButton.onClick.AddListener(CancelReplacement);
         
         // Initialize recipe display text
         UpdateRecipeDisplay();
@@ -405,15 +409,11 @@ public class ConcoctionManager : MonoBehaviour
     }
     
     /// <summary>
-    /// Show or hide replacement instructions
+    /// Show or hide replacement instructions and discard button
     /// </summary>
     void ShowReplacementInstructions(bool show)
     {
-        // For now just debug log, you can add UI later
-        if (show)
-        {
-            Debug.Log("INSTRUCTIONS: Click on any potion to replace it with the new one, or press ESC to keep all potions.");
-        }
+        discardPotionButton.gameObject.SetActive(show);
     }
     
     /// <summary>
@@ -425,6 +425,7 @@ public class ConcoctionManager : MonoBehaviour
         
         Debug.Log($"Replacing potion: {potionToReplace.potionName} with new potion: {pendingRecipe.potionName}");
         
+        ShowReplacementInstructions(false);
         // Get the shelf of the potion to replace
         Transform shelf = potionToReplace.transform.parent;
         // Start the replacement sequence
@@ -479,7 +480,7 @@ public class ConcoctionManager : MonoBehaviour
     public void CancelReplacement()
     {
         Debug.Log("Potion replacement cancelled. Keeping all existing potions.");
-        
+        ShowReplacementInstructions(false);
         // Animate destruction of the pending potion at cauldron if it exists
         if (pendingPotionAtCauldron != null) StartCoroutine(AnimatePotionDestruction(pendingPotionAtCauldron));
         else CompleteCancellation();
@@ -525,7 +526,6 @@ public class ConcoctionManager : MonoBehaviour
     void EndReplacementMode()
     {
         EnableReplacementModeOnPotions(false);
-        ShowReplacementInstructions(false);
         ClearPendingPotionData();
     }
     
@@ -541,14 +541,6 @@ public class ConcoctionManager : MonoBehaviour
         pendingMapping = null;
         pendingPotionAtCauldron = null;
         pendingIngredientsToReplace = null;
-    }
-    
-    /// <summary>
-    /// Handle ESC key to cancel replacement
-    /// </summary>
-    void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Escape) && pendingRecipe != null) CancelReplacement();
     }
     
     // Pending potion data for replacement mode
