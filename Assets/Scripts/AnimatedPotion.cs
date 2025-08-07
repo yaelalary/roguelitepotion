@@ -208,6 +208,13 @@ public class AnimatedPotion : MonoBehaviour
     /// </summary>
     void OnMouseExit()
     {
+        // Don't do anything if colliders are disabled (destruction in progress)
+        if (potionCollider != null && !potionCollider.enabled)
+        {
+            Debug.Log("Collider disabled, skipping OnMouseExit animation");
+            return;
+        }
+
         tooltip.HideTooltip();
         
         // Reset collider to original size

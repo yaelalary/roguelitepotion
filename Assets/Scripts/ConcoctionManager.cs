@@ -495,11 +495,11 @@ public class ConcoctionManager : MonoBehaviour
     /// </summary>
     IEnumerator ReplacePotionSequence(AnimatedPotion potionToReplace, Transform shelf)
     {
-        // First, destroy the old potion
-        DestroyImmediate(potionToReplace.gameObject);
+        // First, animate the destruction of the old potion
+        yield return StartCoroutine(AnimatePotionDestruction(potionToReplace.gameObject, false));
         
-        // Wait a small delay to ensure the destruction is complete
-        yield return new WaitForSeconds(0.2f);
+        // Add a small pause between destruction and new potion arrival for better visual flow
+        yield return new WaitForSeconds(0.3f);
         
         // Now handle the new potion
         if (pendingPotionAtCauldron != null)
@@ -549,12 +549,55 @@ public class ConcoctionManager : MonoBehaviour
     {
         Debug.Log("Potion replacement cancelled. Keeping all existing potions.");
         
-        // Destroy the pending potion at cauldron if it exists
+        // Animate destruction of the pending potion at cauldron if it exists
         if (pendingPotionAtCauldron != null)
         {
-            DestroyImmediate(pendingPotionAtCauldron);
+            StartCoroutine(AnimatePotionDestruction(pendingPotionAtCauldron));
+        }
+        else
+        {
+            // If no potion to animate, proceed immediately
+            CompleteCancellation();
+        }
+    }
+    
+    /// <summary>
+    /// Animate potion destruction with simple scale effect
+    /// </summary>
+    IEnumerator AnimatePotionDestruction(GameObject potionToDestroy, bool shouldCompleteCancellation = true)
+    {
+        Debug.Log("Animating potion destruction...");
+        
+        // COMPLETELY disable all colliders to prevent mouse events
+        Collider2D[] allColliders = potionToDestroy.GetComponents<Collider2D>();
+        foreach (var collider in allColliders)
+        {
+            collider.enabled = false;
         }
         
+        // Kill any existing DOTween animations on this object
+        potionToDestroy.transform.DOKill();
+        
+        // Use DOTween again now that we fixed the OnMouseExit interference
+        yield return potionToDestroy.transform.DOScale(Vector3.zero, potionAnimationDuration)
+            .SetEase(Ease.InBack)
+            .WaitForCompletion();
+
+        Debug.Log("Potion destruction animation completed.");
+        DestroyImmediate(potionToDestroy);
+        
+        // Complete cancellation only if this is for cancellation (not replacement)
+        if (shouldCompleteCancellation)
+        {
+            CompleteCancellation();
+        }
+    }
+    
+    /// <summary>
+    /// Complete the cancellation process after animation
+    /// </summary>
+    void CompleteCancellation()
+    {
         // Replace used ingredients since no potion was placed
         if (pendingIngredientsToReplace != null)
         {
