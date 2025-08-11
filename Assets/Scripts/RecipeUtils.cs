@@ -84,34 +84,4 @@ public static class RecipeUtils
     {
         return CreateNaturalRequirement(IngredientSubFamily.Mineral, minCount, maxCount);
     }
-    
-    /// <summary>
-    /// Validate if a recipe has valid requirements
-    /// </summary>
-    public static bool IsValidRecipe(PotionRecipe recipe)
-    {
-        if (recipe == null) return false;
-        if (string.IsNullOrEmpty(recipe.potionName)) return false;
-        if (recipe.categoryRequirements == null || recipe.categoryRequirements.Count == 0) return false;
-        if (recipe.level < GameConstants.MIN_POTION_LEVEL || recipe.level > GameConstants.MAX_POTION_LEVEL) return false;
-        if (recipe.duration < GameConstants.MIN_POTION_DURATION || recipe.duration > GameConstants.MAX_POTION_DURATION) return false;
-        
-        return true;
-    }
-    
-    /// <summary>
-    /// Get the complexity score of a recipe (higher = more complex)
-    /// </summary>
-    public static int GetRecipeComplexity(PotionRecipe recipe)
-    {
-        if (recipe?.categoryRequirements == null) return 0;
-        
-        int complexity = 0;
-        foreach (var requirement in recipe.categoryRequirements)
-        {
-            complexity += requirement.minCount;
-        }
-        
-        return complexity;
-    }
 }

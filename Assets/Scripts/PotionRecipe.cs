@@ -18,7 +18,6 @@ public class PotionRecipe
     
     [Header("Potion Properties")]
     public int level = 1;
-    public int subLevel = 1;
     public int duration = 30;
     
     // Constructor to ensure lists are never null

@@ -53,65 +53,193 @@ public class ConcoctionManager : MonoBehaviour
         recipes.Clear();
         
         // Recipe priority: most specific (uses most ingredients) to most general
+        // Format: CreateRecipe([magic ingredients], [natural ingredients])
+        // [plants, animals, minerals] for each type
         
-        // 2 IDENTICAL INGREDIENTS - Most specific recipes
-        CreateRecipe("Double Magic Plant Potion", "Enhanced plant magic", 3, 1, 60,
-                    RecipeUtils.MagicPlant(2, 2));
-        
-        CreateRecipe("Double Magic Animal Potion", "Enhanced animal magic", 3, 1, 60,
-                    RecipeUtils.MagicAnimal(2, 2));
-        
-        CreateRecipe("Double Magic Mineral Potion", "Very powerful mineral magic", 3, 1, 90,
-                    RecipeUtils.MagicMineral(2, 2));
-        
+        // 2 IDENTICAL MAGIC INGREDIENTS - Most specific recipes
+        CreateRecipe(new int[]{2, 0, 0}, new int[]{0, 0, 0}); // 2 magic plants
+        CreateRecipe(new int[]{0, 2, 0}, new int[]{0, 0, 0}); // 2 magic animals
+        CreateRecipe(new int[]{0, 0, 2}, new int[]{0, 0, 0}); // 2 magic minerals
         // 2 DIFFERENT MAGIC INGREDIENTS
-        CreateRecipe("Magic Plant & Animal Potion", "Mixed essence of plant and animal", 2, 2, 45,
-                    RecipeUtils.MagicPlant(1, 1),
-                    RecipeUtils.MagicAnimal(1, 1));
-        
-        CreateRecipe("Magic Plant & Mineral Potion", "Mixed essence of plant and mineral", 2, 2, 45,
-                    RecipeUtils.MagicPlant(1, 1),
-                    RecipeUtils.MagicMineral(1, 1));
-        
-        CreateRecipe("Magic Animal & Mineral Potion", "Mixed essence of animal and mineral", 2, 2, 45,
-                    RecipeUtils.MagicAnimal(1, 1),
-                    RecipeUtils.MagicMineral(1, 1));
-        
-        // 2 DIFFERENT INGREDIENTS - Magic + Natural
-        CreateRecipe("Hybrid Plant Potion", "Magic and natural plant fusion", 2, 1, 30,
-                    RecipeUtils.MagicPlant(1, 1),
-                    RecipeUtils.NaturalPlant(1, 1));
-        
-        CreateRecipe("Hybrid Animal Potion", "Magic and natural animal fusion", 2, 1, 30,
-                    RecipeUtils.MagicAnimal(1, 1),
-                    RecipeUtils.NaturalAnimal(1, 1));
-        
-        CreateRecipe("Hybrid Mineral Potion", "Magic and natural mineral fusion", 2, 1, 30,
-                    RecipeUtils.MagicMineral(1, 1),
-                    RecipeUtils.NaturalMineral(1, 1));
-        
+        CreateRecipe(new int[]{1, 1, 0}, new int[]{0, 0, 0}); // magic plant + animal
+        CreateRecipe(new int[]{1, 0, 1}, new int[]{0, 0, 0}); // magic plant + mineral
+        CreateRecipe(new int[]{0, 1, 1}, new int[]{0, 0, 0}); // magic animal + mineral
+        // 2 DIFFERENT INGREDIENTS - Magic Plant + Natural
+        CreateRecipe(new int[]{1, 0, 0}, new int[]{1, 0, 0}); // magic plant + natural plant
+        CreateRecipe(new int[]{1, 0, 0}, new int[]{0, 1, 0}); // magic plant + natural animal
+        CreateRecipe(new int[]{1, 0, 0}, new int[]{0, 0, 1}); // magic plant + natural mineral
+        // 2 DIFFERENT INGREDIENTS - Magic Animal + Natural
+        CreateRecipe(new int[]{0, 1, 0}, new int[]{1, 0, 0}); // magic animal + natural plant
+        CreateRecipe(new int[]{0, 1, 0}, new int[]{0, 1, 0}); // magic animal + natural animal
+        CreateRecipe(new int[]{0, 1, 0}, new int[]{0, 0, 1}); // magic animal + natural mineral
+        // 2 DIFFERENT INGREDIENTS - Magic Mineral + Natural
+        CreateRecipe(new int[]{0, 0, 1}, new int[]{1, 0, 0}); // magic mineral + natural plant
+        CreateRecipe(new int[]{0, 0, 1}, new int[]{0, 1, 0}); // magic mineral + natural animal
+        CreateRecipe(new int[]{0, 0, 1}, new int[]{0, 0, 1}); // magic mineral + natural mineral
+
         // 1 INGREDIENT - General fallback recipes
-        CreateRecipe("Magic Plant Potion", "A basic potion made from one magic plant", 1, 1, 30,
-                    RecipeUtils.MagicPlant(1, 1));
-        
-        CreateRecipe("Magic Animal Potion", "A basic potion made from one magic animal", 1, 1, 30,
-                    RecipeUtils.MagicAnimal(1, 1));
-        
-        CreateRecipe("Magic Mineral Potion", "A powerful potion made from one magic mineral", 1, 2, 60,
-                    RecipeUtils.MagicMineral(1, 1));
+        CreateRecipe(new int[]{1, 0, 0}, new int[]{0, 0, 0}); // 1 magic plant
+        CreateRecipe(new int[]{0, 1, 0}, new int[]{0, 0, 0}); // 1 magic animal
+        CreateRecipe(new int[]{0, 0, 1}, new int[]{0, 0, 0}); // 1 magic mineral
     }
     
-    void CreateRecipe(string name, string description, int level, int subLevel, int duration, params CategoryRequirement[] requirements)
+    void CreateRecipe(string name, string description, int level, int duration, params CategoryRequirement[] requirements)
     {
         recipes.Add(new PotionRecipe
         {
             potionName = name,
             description = description,
             level = level,
-            subLevel = subLevel,
             duration = duration,
             categoryRequirements = new List<CategoryRequirement>(requirements)
         });
+    }
+    
+    /// <summary>
+    /// New scalable recipe creation method
+    /// </summary>
+    void CreateRecipe(int[] magicIngredients, int[] naturalIngredients)
+    {
+        // magicIngredients = [plants, animals, minerals]
+        // naturalIngredients = [plants, animals, minerals]
+        
+        List<CategoryRequirement> requirements = new List<CategoryRequirement>();
+        
+        // Add magic ingredient requirements
+        if (magicIngredients[0] > 0) requirements.Add(RecipeUtils.MagicPlant(magicIngredients[0], magicIngredients[0]));
+        if (magicIngredients[1] > 0) requirements.Add(RecipeUtils.MagicAnimal(magicIngredients[1], magicIngredients[1]));
+        if (magicIngredients[2] > 0) requirements.Add(RecipeUtils.MagicMineral(magicIngredients[2], magicIngredients[2]));
+        
+        // Add natural ingredient requirements
+        if (naturalIngredients[0] > 0) requirements.Add(RecipeUtils.NaturalPlant(naturalIngredients[0], naturalIngredients[0]));
+        if (naturalIngredients[1] > 0) requirements.Add(RecipeUtils.NaturalAnimal(naturalIngredients[1], naturalIngredients[1]));
+        if (naturalIngredients[2] > 0) requirements.Add(RecipeUtils.NaturalMineral(naturalIngredients[2], naturalIngredients[2]));
+        
+        // Calculate properties automatically
+        int level = CalculatePotionLevel(magicIngredients, naturalIngredients);
+        string name = GeneratePotionName(magicIngredients, naturalIngredients, level);
+        string description = GeneratePotionDescription(magicIngredients, naturalIngredients);
+        int duration = CalculatePotionDuration(magicIngredients, naturalIngredients);
+        
+        recipes.Add(new PotionRecipe
+        {
+            potionName = name,
+            description = description,
+            level = level,
+            duration = duration,
+            categoryRequirements = requirements
+        });
+    }
+    
+    string GeneratePotionName(int[] magic, int[] natural, int level)
+    {
+        int totalMagic = magic[0] + magic[1] + magic[2];
+        int totalNatural = natural[0] + natural[1] + natural[2];
+        
+        string baseName;
+        
+        // Handle identical ingredients
+        if (magic[0] == 2) baseName = "Double Magic Plant Potion";
+        else if (magic[1] == 2) baseName = "Double Magic Animal Potion";
+        else if (magic[2] == 2) baseName = "Double Magic Mineral Potion";
+        
+        // Handle mixed magic ingredients
+        else if (totalMagic == 2 && totalNatural == 0)
+        {
+            if (magic[0] > 0 && magic[1] > 0) baseName = "Magic Plant & Animal Potion";
+            else if (magic[0] > 0 && magic[2] > 0) baseName = "Magic Plant & Mineral Potion";
+            else if (magic[1] > 0 && magic[2] > 0) baseName = "Magic Animal & Mineral Potion";
+            else baseName = "Mixed Potion";
+        }
+        
+        // Handle hybrid (magic + natural)
+        else if (totalMagic == 1 && totalNatural == 1)
+        {
+            if (magic[0] > 0 && natural[0] > 0) baseName = "Hybrid Plant Potion";
+            else if (magic[1] > 0 && natural[1] > 0) baseName = "Hybrid Animal Potion";
+            else if (magic[2] > 0 && natural[2] > 0) baseName = "Hybrid Mineral Potion";
+            else baseName = "Mixed Potion";
+        }
+        
+        // Handle single ingredients
+        else if (totalMagic == 1 && totalNatural == 0)
+        {
+            if (magic[0] > 0) baseName = "Magic Plant Potion";
+            else if (magic[1] > 0) baseName = "Magic Animal Potion";
+            else if (magic[2] > 0) baseName = "Magic Mineral Potion";
+            else baseName = "Mixed Potion";
+        }
+        
+        // Default case
+        else
+        {
+            baseName = "Mixed Potion";
+        }
+        
+        // Add level to the name
+        return $"{baseName} Lv.{level}";
+    }
+    
+    string GeneratePotionDescription(int[] magic, int[] natural)
+    {
+        int totalMagic = magic[0] + magic[1] + magic[2];
+        int totalNatural = natural[0] + natural[1] + natural[2];
+        
+        if (magic[0] == 2) return "Enhanced plant magic";
+        if (magic[1] == 2) return "Enhanced animal magic";
+        if (magic[2] == 2) return "Very powerful mineral magic";
+        
+        if (totalMagic == 2 && totalNatural == 0)
+        {
+            if (magic[0] > 0 && magic[1] > 0) return "Mixed essence of plant and animal";
+            if (magic[0] > 0 && magic[2] > 0) return "Mixed essence of plant and mineral";
+            if (magic[1] > 0 && magic[2] > 0) return "Mixed essence of animal and mineral";
+        }
+        
+        if (totalMagic == 1 && totalNatural == 1)
+        {
+            if (magic[0] > 0) return "Magic and natural plant fusion";
+            if (magic[1] > 0) return "Magic and natural animal fusion";
+            if (magic[2] > 0) return "Magic and natural mineral fusion";
+        }
+        
+        if (totalMagic == 1 && totalNatural == 0)
+        {
+            if (magic[0] > 0) return "A basic potion made from one magic plant";
+            if (magic[1] > 0) return "A basic potion made from one magic animal";
+            if (magic[2] > 0) return "A powerful potion made from one magic mineral";
+        }
+        
+        return "A mixed potion with various ingredients";
+    }
+    
+    int CalculatePotionLevel(int[] magic, int[] natural)
+    {
+        // Each magic ingredient = 2 points, each natural ingredient = 1 point
+        // Score per type: sum all points for each type
+        int plantScore = magic[0] * 2 + natural[0] * 1;     // Plants
+        int animalScore = magic[1] * 2 + natural[1] * 1;    // Animals  
+        int mineralScore = magic[2] * 2 + natural[2] * 1;   // Minerals
+        
+        // Level = highest score among the 3 types
+        return Mathf.Max(plantScore, animalScore, mineralScore);
+    }
+    
+    int CalculatePotionDuration(int[] magic, int[] natural)
+    {
+        int baseDuration = 30;
+        
+        // Duration based on ingredient strength
+        int magicMineral = magic[2];
+        int totalIngredients = magic[0] + magic[1] + magic[2] + natural[0] + natural[1] + natural[2];
+        
+        // Minerals increase duration significantly
+        baseDuration += magicMineral * 30;
+        
+        // Multiple ingredients increase duration
+        if (totalIngredients >= 2) baseDuration += 15;
+        
+        return baseDuration;
     }
     
     public void AddSelectedIngredient(IngredientPrefab ingredient)

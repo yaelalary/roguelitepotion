@@ -81,7 +81,7 @@ public class PotionTooltip : MonoBehaviour
             nameText.text = potionData.potionName;
             
         if (levelText != null)
-            levelText.text = $"Level {potionData.level}.{potionData.subLevel}";
+            levelText.text = $"Level {potionData.level}";
             
         if (descriptionText != null)
             descriptionText.text = potionData.description;

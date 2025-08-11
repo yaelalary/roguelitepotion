@@ -15,7 +15,6 @@ public class AnimatedPotion : MonoBehaviour
     
     [Header("Potion Properties")]
     public int level = 1;
-    public int subLevel = 1;
     public int duration = 30;
     public List<Ingredient> ingredients = new List<Ingredient>();
     
@@ -82,7 +81,6 @@ public class AnimatedPotion : MonoBehaviour
         {
             description = recipe.description;
             level = recipe.level;
-            subLevel = recipe.subLevel;
             duration = recipe.duration;
         }
         
