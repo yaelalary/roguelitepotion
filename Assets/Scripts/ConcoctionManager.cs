@@ -12,6 +12,7 @@ public class ConcoctionManager : MonoBehaviour
     public TextMeshProUGUI recipeNameText;
     public Toggle keepExistingPotionsToggle;
     public Button discardPotionButton;
+    public TextMeshProUGUI roundProgressText;
     
     [Header("Game References")]
     public Basket2D basket;
@@ -33,6 +34,7 @@ public class ConcoctionManager : MonoBehaviour
     private List<PotionRecipe> recipes = new List<PotionRecipe>();
     private PotionRecipe currentSelectedRecipe = null;
     private bool isAnimating = false; // Prevent multiple concoctions during animation
+    private int totalLevelsCreated = 0;
 
     void Start()
     {
@@ -424,6 +426,9 @@ public class ConcoctionManager : MonoBehaviour
         basket.ReplaceIngredients(ingredientsToReplace);
 
         Debug.Log($"Potion {potionId} successfully created and placed on shelf!");
+        
+        // Add potion levels to round progress
+        AddPotionLevels(currentSelectedRecipe.level);
     }
     
     void RemoveUsedIngredients()
@@ -596,6 +601,12 @@ public class ConcoctionManager : MonoBehaviour
             basket.ReplaceIngredients(pendingIngredientsToReplace);
         }
         
+        // Add potion levels to round progress (before clearing pending data)
+        if (pendingRecipe != null)
+        {
+            AddPotionLevels(pendingRecipe.level);
+        }
+        
         // End replacement mode after replacing ingredients (this will clean up data)
         EndReplacementMode();
         // Remove used ingredients
@@ -692,5 +703,14 @@ public class ConcoctionManager : MonoBehaviour
         }
         
         Debug.Log($"Ingredient interactions {(enabled ? "ENABLED" : "DISABLED")}");
+    }
+    
+    /// <summary>
+    /// Add levels when a potion is created
+    /// </summary>
+    void AddPotionLevels(int levels)
+    {
+        totalLevelsCreated += levels;
+        roundProgressText.text = $"{totalLevelsCreated}";
     }
 }
