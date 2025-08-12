@@ -53,12 +53,206 @@ public class ConcoctionManager : MonoBehaviour
     void CreateAllRecipes()
     {
         recipes.Clear();
-        
+
         // Recipe priority: most specific (uses most ingredients) to most general
         // Format: CreateRecipe([magic ingredients], [natural ingredients])
         // [plants, animals, minerals] for each type
+
+        // ================== 4 INGREDIENTS RECIPES ==================
+
+        // 4 IDENTICAL MAGIC INGREDIENTS
+        CreateRecipe(new int[]{4, 0, 0}, new int[]{0, 0, 0}); // 4 magic plants
+        CreateRecipe(new int[]{0, 4, 0}, new int[]{0, 0, 0}); // 4 magic animals
+        CreateRecipe(new int[]{0, 0, 4}, new int[]{0, 0, 0}); // 4 magic minerals
         
-        // 2 IDENTICAL MAGIC INGREDIENTS - Most specific recipes
+        // 3 IDENTICAL MAGIC INGREDIENTS + 1 DIFFERENT MAGIC INGREDIENT
+        CreateRecipe(new int[]{3, 1, 0}, new int[]{0, 0, 0}); // 3 magic plants + 1 magic animal
+        CreateRecipe(new int[]{3, 0, 1}, new int[]{0, 0, 0}); // 3 magic plants + 1 magic mineral
+        CreateRecipe(new int[]{1, 3, 0}, new int[]{0, 0, 0}); // 1 magic plant + 3 magic animals
+        CreateRecipe(new int[]{0, 3, 1}, new int[]{0, 0, 0}); // 3 magic animals + 1 magic mineral
+        CreateRecipe(new int[]{1, 0, 3}, new int[]{0, 0, 0}); // 1 magic plant + 3 magic minerals
+        CreateRecipe(new int[]{0, 1, 3}, new int[]{0, 0, 0}); // 1 magic animal + 3 magic minerals
+        
+        // 2 IDENTICAL MAGIC INGREDIENTS + 2 IDENTICAL MAGIC INGREDIENTS (DIFFERENT TYPE)
+        CreateRecipe(new int[]{2, 2, 0}, new int[]{0, 0, 0}); // 2 magic plants + 2 magic animals
+        CreateRecipe(new int[]{2, 0, 2}, new int[]{0, 0, 0}); // 2 magic plants + 2 magic minerals
+        CreateRecipe(new int[]{0, 2, 2}, new int[]{0, 0, 0}); // 2 magic animals + 2 magic minerals
+        
+        // 2 IDENTICAL MAGIC INGREDIENTS + 1 MAGIC + 1 MAGIC (ALL DIFFERENT)
+        CreateRecipe(new int[]{2, 1, 1}, new int[]{0, 0, 0}); // 2 magic plants + 1 magic animal + 1 magic mineral
+        CreateRecipe(new int[]{1, 2, 1}, new int[]{0, 0, 0}); // 1 magic plant + 2 magic animals + 1 magic mineral
+        CreateRecipe(new int[]{1, 1, 2}, new int[]{0, 0, 0}); // 1 magic plant + 1 magic animal + 2 magic minerals
+        
+        // 3 IDENTICAL MAGIC INGREDIENTS + 1 NATURAL INGREDIENT
+        CreateRecipe(new int[]{3, 0, 0}, new int[]{1, 0, 0}); // 3 magic plants + 1 natural plant
+        CreateRecipe(new int[]{3, 0, 0}, new int[]{0, 1, 0}); // 3 magic plants + 1 natural animal
+        CreateRecipe(new int[]{3, 0, 0}, new int[]{0, 0, 1}); // 3 magic plants + 1 natural mineral
+        CreateRecipe(new int[]{0, 3, 0}, new int[]{1, 0, 0}); // 3 magic animals + 1 natural plant
+        CreateRecipe(new int[]{0, 3, 0}, new int[]{0, 1, 0}); // 3 magic animals + 1 natural animal
+        CreateRecipe(new int[]{0, 3, 0}, new int[]{0, 0, 1}); // 3 magic animals + 1 natural mineral
+        CreateRecipe(new int[]{0, 0, 3}, new int[]{1, 0, 0}); // 3 magic minerals + 1 natural plant
+        CreateRecipe(new int[]{0, 0, 3}, new int[]{0, 1, 0}); // 3 magic minerals + 1 natural animal
+        CreateRecipe(new int[]{0, 0, 3}, new int[]{0, 0, 1}); // 3 magic minerals + 1 natural mineral
+        
+        // 2 IDENTICAL MAGIC INGREDIENTS + 1 MAGIC + 1 NATURAL
+        CreateRecipe(new int[]{2, 1, 0}, new int[]{1, 0, 0}); // 2 magic plants + 1 magic animal + 1 natural plant
+        CreateRecipe(new int[]{2, 1, 0}, new int[]{0, 1, 0}); // 2 magic plants + 1 magic animal + 1 natural animal
+        CreateRecipe(new int[]{2, 1, 0}, new int[]{0, 0, 1}); // 2 magic plants + 1 magic animal + 1 natural mineral
+        CreateRecipe(new int[]{2, 0, 1}, new int[]{1, 0, 0}); // 2 magic plants + 1 magic mineral + 1 natural plant
+        CreateRecipe(new int[]{2, 0, 1}, new int[]{0, 1, 0}); // 2 magic plants + 1 magic mineral + 1 natural animal
+        CreateRecipe(new int[]{2, 0, 1}, new int[]{0, 0, 1}); // 2 magic plants + 1 magic mineral + 1 natural mineral
+        CreateRecipe(new int[]{1, 2, 0}, new int[]{1, 0, 0}); // 1 magic plant + 2 magic animals + 1 natural plant
+        CreateRecipe(new int[]{1, 2, 0}, new int[]{0, 1, 0}); // 1 magic plant + 2 magic animals + 1 natural animal
+        CreateRecipe(new int[]{1, 2, 0}, new int[]{0, 0, 1}); // 1 magic plant + 2 magic animals + 1 natural mineral
+        CreateRecipe(new int[]{0, 2, 1}, new int[]{1, 0, 0}); // 2 magic animals + 1 magic mineral + 1 natural plant
+        CreateRecipe(new int[]{0, 2, 1}, new int[]{0, 1, 0}); // 2 magic animals + 1 magic mineral + 1 natural animal
+        CreateRecipe(new int[]{0, 2, 1}, new int[]{0, 0, 1}); // 2 magic animals + 1 magic mineral + 1 natural mineral
+        CreateRecipe(new int[]{1, 0, 2}, new int[]{1, 0, 0}); // 1 magic plant + 2 magic minerals + 1 natural plant
+        CreateRecipe(new int[]{1, 0, 2}, new int[]{0, 1, 0}); // 1 magic plant + 2 magic minerals + 1 natural animal
+        CreateRecipe(new int[]{1, 0, 2}, new int[]{0, 0, 1}); // 1 magic plant + 2 magic minerals + 1 natural mineral
+        CreateRecipe(new int[]{0, 1, 2}, new int[]{1, 0, 0}); // 1 magic animal + 2 magic minerals + 1 natural plant
+        CreateRecipe(new int[]{0, 1, 2}, new int[]{0, 1, 0}); // 1 magic animal + 2 magic minerals + 1 natural animal
+        CreateRecipe(new int[]{0, 1, 2}, new int[]{0, 0, 1}); // 1 magic animal + 2 magic minerals + 1 natural mineral
+
+        // 3 DIFFERENT MAGIC INGREDIENTS + 1 NATURAL INGREDIENT
+        CreateRecipe(new int[]{1, 1, 1}, new int[]{1, 0, 0}); // 1 magic plant + 1 magic animal + 1 magic mineral + 1 natural plant
+        CreateRecipe(new int[]{1, 1, 1}, new int[]{0, 1, 0}); // 1 magic plant + 1 magic animal + 1 magic mineral + 1 natural animal
+        CreateRecipe(new int[]{1, 1, 1}, new int[]{0, 0, 1}); // 1 magic plant + 1 magic animal + 1 magic mineral + 1 natural mineral
+
+        // 2 MAGIC + 2 NATURAL (VARIOUS COMBINATIONS)
+        CreateRecipe(new int[]{2, 0, 0}, new int[]{2, 0, 0}); // 2 magic plants + 2 natural plants
+        CreateRecipe(new int[]{2, 0, 0}, new int[]{0, 2, 0}); // 2 magic plants + 2 natural animals
+        CreateRecipe(new int[]{2, 0, 0}, new int[]{0, 0, 2}); // 2 magic plants + 2 natural minerals
+        CreateRecipe(new int[]{0, 2, 0}, new int[]{2, 0, 0}); // 2 magic animals + 2 natural plants
+        CreateRecipe(new int[]{0, 2, 0}, new int[]{0, 2, 0}); // 2 magic animals + 2 natural animals
+        CreateRecipe(new int[]{0, 2, 0}, new int[]{0, 0, 2}); // 2 magic animals + 2 natural minerals
+        CreateRecipe(new int[]{0, 0, 2}, new int[]{2, 0, 0}); // 2 magic minerals + 2 natural plants
+        CreateRecipe(new int[]{0, 0, 2}, new int[]{0, 2, 0}); // 2 magic minerals + 2 natural animals
+        CreateRecipe(new int[]{0, 0, 2}, new int[]{0, 0, 2}); // 2 magic minerals + 2 natural minerals
+
+        CreateRecipe(new int[]{2, 0, 0}, new int[]{1, 1, 0}); // 2 magic plants + 1 natural plant + 1 natural animal
+        CreateRecipe(new int[]{2, 0, 0}, new int[]{1, 0, 1}); // 2 magic plants + 1 natural plant + 1 natural mineral
+        CreateRecipe(new int[]{2, 0, 0}, new int[]{0, 1, 1}); // 2 magic plants + 1 natural animal + 1 natural mineral
+        CreateRecipe(new int[]{0, 2, 0}, new int[]{1, 1, 0}); // 2 magic animals + 1 natural plant + 1 natural animal
+        CreateRecipe(new int[]{0, 2, 0}, new int[]{1, 0, 1}); // 2 magic animals + 1 natural plant + 1 natural mineral
+        CreateRecipe(new int[]{0, 2, 0}, new int[]{0, 1, 1}); // 2 magic animals + 1 natural animal + 1 natural mineral
+        CreateRecipe(new int[]{0, 0, 2}, new int[]{1, 1, 0}); // 2 magic minerals + 1 natural plant + 1 natural animal
+        CreateRecipe(new int[]{0, 0, 2}, new int[]{1, 0, 1}); // 2 magic minerals + 1 natural plant + 1 natural mineral
+        CreateRecipe(new int[]{0, 0, 2}, new int[]{0, 1, 1}); // 2 magic minerals + 1 natural animal + 1 natural mineral
+
+        CreateRecipe(new int[]{1, 1, 0}, new int[]{2, 0, 0}); // 1 magic plant + 1 magic animal + 2 natural plants
+        CreateRecipe(new int[]{1, 1, 0}, new int[]{0, 2, 0}); // 1 magic plant + 1 magic animal + 2 natural animals
+        CreateRecipe(new int[]{1, 1, 0}, new int[]{0, 0, 2}); // 1 magic plant + 1 magic animal + 2 natural minerals
+        CreateRecipe(new int[]{1, 0, 1}, new int[]{2, 0, 0}); // 1 magic plant + 1 magic mineral + 2 natural plants
+        CreateRecipe(new int[]{1, 0, 1}, new int[]{0, 2, 0}); // 1 magic plant + 1 magic mineral + 2 natural animals
+        CreateRecipe(new int[]{1, 0, 1}, new int[]{0, 0, 2}); // 1 magic plant + 1 magic mineral + 2 natural minerals
+        CreateRecipe(new int[]{0, 1, 1}, new int[]{2, 0, 0}); // 1 magic animal + 1 magic mineral + 2 natural plants
+        CreateRecipe(new int[]{0, 1, 1}, new int[]{0, 2, 0}); // 1 magic animal + 1 magic mineral + 2 natural animals
+        CreateRecipe(new int[]{0, 1, 1}, new int[]{0, 0, 2}); // 1 magic animal + 1 magic mineral + 2 natural minerals
+
+        CreateRecipe(new int[]{1, 1, 0}, new int[]{1, 1, 0}); // 1 magic plant + 1 magic animal + 1 natural plant + 1 natural animal
+        CreateRecipe(new int[]{1, 1, 0}, new int[]{1, 0, 1}); // 1 magic plant + 1 magic animal + 1 natural plant + 1 natural mineral
+        CreateRecipe(new int[]{1, 1, 0}, new int[]{0, 1, 1}); // 1 magic plant + 1 magic animal + 1 natural animal + 1 natural mineral
+        CreateRecipe(new int[]{1, 0, 1}, new int[]{1, 1, 0}); // 1 magic plant + 1 magic mineral + 1 natural plant + 1 natural animal
+        CreateRecipe(new int[]{1, 0, 1}, new int[]{1, 0, 1}); // 1 magic plant + 1 magic mineral + 1 natural plant + 1 natural mineral
+        CreateRecipe(new int[]{1, 0, 1}, new int[]{0, 1, 1}); // 1 magic plant + 1 magic mineral + 1 natural animal + 1 natural mineral
+        CreateRecipe(new int[]{0, 1, 1}, new int[]{1, 1, 0}); // 1 magic animal + 1 magic mineral + 1 natural plant + 1 natural animal
+        CreateRecipe(new int[]{0, 1, 1}, new int[]{1, 0, 1}); // 1 magic animal + 1 magic mineral + 1 natural plant + 1 natural mineral
+        CreateRecipe(new int[]{0, 1, 1}, new int[]{0, 1, 1}); // 1 magic animal + 1 magic mineral + 1 natural animal + 1 natural mineral
+        
+        // 1 MAGIC + 3 NATURAL
+        CreateRecipe(new int[]{1, 0, 0}, new int[]{3, 0, 0}); // 1 magic plant + 3 natural plants
+        CreateRecipe(new int[]{1, 0, 0}, new int[]{0, 3, 0}); // 1 magic plant + 3 natural animals
+        CreateRecipe(new int[]{1, 0, 0}, new int[]{0, 0, 3}); // 1 magic plant + 3 natural minerals
+        CreateRecipe(new int[]{0, 1, 0}, new int[]{3, 0, 0}); // 1 magic animal + 3 natural plants
+        CreateRecipe(new int[]{0, 1, 0}, new int[]{0, 3, 0}); // 1 magic animal + 3 natural animals
+        CreateRecipe(new int[]{0, 1, 0}, new int[]{0, 0, 3}); // 1 magic animal + 3 natural minerals
+        CreateRecipe(new int[]{0, 0, 1}, new int[]{3, 0, 0}); // 1 magic mineral + 3 natural plants
+        CreateRecipe(new int[]{0, 0, 1}, new int[]{0, 3, 0}); // 1 magic mineral + 3 natural animals
+        CreateRecipe(new int[]{0, 0, 1}, new int[]{0, 0, 3}); // 1 magic mineral + 3 natural minerals
+
+        CreateRecipe(new int[]{1, 0, 0}, new int[]{2, 1, 0}); // 1 magic plant + 2 natural plants + 1 natural animal
+        CreateRecipe(new int[]{1, 0, 0}, new int[]{2, 0, 1}); // 1 magic plant + 2 natural plants + 1 natural mineral
+        CreateRecipe(new int[]{1, 0, 0}, new int[]{1, 2, 0}); // 1 magic plant + 1 natural plant + 2 natural animals
+        CreateRecipe(new int[]{1, 0, 0}, new int[]{0, 2, 1}); // 1 magic plant + 2 natural animals + 1 natural mineral
+        CreateRecipe(new int[]{1, 0, 0}, new int[]{1, 0, 2}); // 1 magic plant + 1 natural plant + 2 natural minerals
+        CreateRecipe(new int[]{1, 0, 0}, new int[]{0, 1, 2}); // 1 magic plant + 1 natural animal + 2 natural minerals
+        CreateRecipe(new int[]{0, 1, 0}, new int[]{2, 1, 0}); // 1 magic animal + 2 natural plants + 1 natural animal
+        CreateRecipe(new int[]{0, 1, 0}, new int[]{2, 0, 1}); // 1 magic animal + 2 natural plants + 1 natural mineral
+        CreateRecipe(new int[]{0, 1, 0}, new int[]{1, 2, 0}); // 1 magic animal + 1 natural plant + 2 natural animals
+        CreateRecipe(new int[]{0, 1, 0}, new int[]{0, 2, 1}); // 1 magic animal + 2 natural animals + 1 natural mineral
+        CreateRecipe(new int[]{0, 1, 0}, new int[]{1, 0, 2}); // 1 magic animal + 1 natural plant + 2 natural minerals
+        CreateRecipe(new int[]{0, 1, 0}, new int[]{0, 1, 2}); // 1 magic animal + 1 natural animal + 2 natural minerals
+        CreateRecipe(new int[]{0, 0, 1}, new int[]{2, 1, 0}); // 1 magic mineral + 2 natural plants + 1 natural animal
+        CreateRecipe(new int[]{0, 0, 1}, new int[]{2, 0, 1}); // 1 magic mineral + 2 natural plants + 1 natural mineral
+        CreateRecipe(new int[]{0, 0, 1}, new int[]{1, 2, 0}); // 1 magic mineral + 1 natural plant + 2 natural animals
+        CreateRecipe(new int[]{0, 0, 1}, new int[]{0, 2, 1}); // 1 magic mineral + 2 natural animals + 1 natural mineral
+        CreateRecipe(new int[]{0, 0, 1}, new int[]{1, 0, 2}); // 1 magic mineral + 1 natural plant + 2 natural minerals
+        CreateRecipe(new int[]{0, 0, 1}, new int[]{0, 1, 2}); // 1 magic mineral + 1 natural animal + 2 natural minerals
+        
+        CreateRecipe(new int[]{1, 0, 0}, new int[]{1, 1, 1}); // 1 magic plant + 1 natural plant + 1 natural animal + 1 natural mineral
+        CreateRecipe(new int[]{0, 1, 0}, new int[]{1, 1, 1}); // 1 magic animal + 1 natural plant + 1 natural animal + 1 natural mineral
+        CreateRecipe(new int[]{0, 0, 1}, new int[]{1, 1, 1}); // 1 magic mineral + 1 natural plant + 1 natural animal + 1 natural mineral
+
+        // ================== 3 INGREDIENTS RECIPES ==================
+
+        // 3 IDENTICAL MAGIC INGREDIENTS
+        CreateRecipe(new int[]{3, 0, 0}, new int[]{0, 0, 0}); // 3 magic plants
+        CreateRecipe(new int[]{0, 3, 0}, new int[]{0, 0, 0}); // 3 magic animals
+        CreateRecipe(new int[]{0, 0, 3}, new int[]{0, 0, 0}); // 3 magic minerals
+        // 2 IDENTICAL MAGIC INGREDIENTS + 1 DIFFERENT MAGIC INGREDIENT
+        CreateRecipe(new int[]{2, 1, 0}, new int[]{0, 0, 0}); // 2 magic plants + 1 magic animal
+        CreateRecipe(new int[]{2, 0, 1}, new int[]{0, 0, 0}); // 2 magic plants + 1 magic mineral
+        CreateRecipe(new int[]{1, 2, 0}, new int[]{0, 0, 0}); // 1 magic plant + 2 magic animals
+        CreateRecipe(new int[]{0, 2, 1}, new int[]{0, 0, 0}); // 2 magic animals + 1 magic mineral
+        CreateRecipe(new int[]{1, 0, 2}, new int[]{0, 0, 0}); // 1 magic plant + 2 magic minerals
+        CreateRecipe(new int[]{0, 1, 2}, new int[]{0, 0, 0}); // 1 magic animal + 2 magic minerals
+        // MAGIC INGREDIENTS ONLY
+        CreateRecipe(new int[]{1, 1, 1}, new int[]{0, 0, 0}); // 3 magic ingredients
+        // 2 IDENTICAL MAGIC INGREDIENTS + 1 DIFFERENT NATURAL INGREDIENT
+        CreateRecipe(new int[]{2, 0, 0}, new int[]{1, 0, 0}); // 2 magic plants + 1 natural plant
+        CreateRecipe(new int[]{2, 0, 0}, new int[]{0, 1, 0}); // 2 magic plants + 1 natural animal
+        CreateRecipe(new int[]{2, 0, 0}, new int[]{0, 0, 1}); // 2 magic plants + 1 natural mineral
+        CreateRecipe(new int[]{0, 2, 0}, new int[]{1, 0, 0}); // 2 magic animals + 1 natural plant
+        CreateRecipe(new int[]{0, 2, 0}, new int[]{0, 1, 0}); // 2 magic animals + 1 natural animal
+        CreateRecipe(new int[]{0, 2, 0}, new int[]{0, 0, 1}); // 2 magic animals + 1 natural mineral
+        CreateRecipe(new int[]{0, 0, 2}, new int[]{1, 0, 0}); // 2 magic minerals + 1 natural plant
+        CreateRecipe(new int[]{0, 0, 2}, new int[]{0, 1, 0}); // 2 magic minerals + 1 natural animal
+        CreateRecipe(new int[]{0, 0, 2}, new int[]{0, 0, 1}); // 2 magic minerals + 1 natural mineral
+        // 2 DIFFERENT MAGIC INGREDIENTS + 1 NATURAL INGREDIENT
+        CreateRecipe(new int[]{1, 1, 0}, new int[]{1, 0, 0}); // magic plant + magic animal + natural plant
+        CreateRecipe(new int[]{1, 1, 0}, new int[]{0, 1, 0}); // magic plant + magic animal + natural animal
+        CreateRecipe(new int[]{1, 1, 0}, new int[]{0, 0, 1}); // magic plant + magic animal + natural mineral
+        CreateRecipe(new int[]{1, 0, 1}, new int[]{1, 0, 0}); // magic plant + magic mineral + natural plant
+        CreateRecipe(new int[]{1, 0, 1}, new int[]{0, 1, 0}); // magic plant + magic mineral + natural animal
+        CreateRecipe(new int[]{1, 0, 1}, new int[]{0, 0, 1}); // magic plant + magic mineral + natural mineral
+        CreateRecipe(new int[]{0, 1, 1}, new int[]{1, 0, 0}); // magic animal + magic mineral + natural plant
+        CreateRecipe(new int[]{0, 1, 1}, new int[]{0, 1, 0}); // magic animal + magic mineral + natural animal
+        CreateRecipe(new int[]{0, 1, 1}, new int[]{0, 0, 1}); // magic animal + magic mineral + natural mineral
+        // 1 MAGIC INGREDIENTS + 2 IDENTICAL NATURAL INGREDIENTS
+        CreateRecipe(new int[]{1, 0, 0}, new int[]{2, 0, 0}); // magic plant + 2 natural plants
+        CreateRecipe(new int[]{0, 1, 0}, new int[]{2, 0, 0}); // magic animal + 2 natural plants
+        CreateRecipe(new int[]{0, 0, 1}, new int[]{2, 0, 0}); // magic mineral + 2 natural plants
+        CreateRecipe(new int[]{1, 0, 0}, new int[]{0, 2, 0}); // magic plant + 2 natural animals
+        CreateRecipe(new int[]{0, 1, 0}, new int[]{0, 2, 0}); // magic animal + 2 natural animals
+        CreateRecipe(new int[]{0, 0, 1}, new int[]{0, 2, 0}); // magic mineral + 2 natural animals
+        CreateRecipe(new int[]{1, 0, 0}, new int[]{0, 0, 2}); // magic plant + 2 natural minerals
+        CreateRecipe(new int[]{0, 1, 0}, new int[]{0, 0, 2}); // magic animal + 2 natural minerals
+        CreateRecipe(new int[]{0, 0, 1}, new int[]{0, 0, 2}); // magic mineral + 2 natural minerals
+        // 1 MAGIC INGREDIENTS + 2 DIFFERENT NATURAL INGREDIENTS
+        CreateRecipe(new int[]{1, 0, 0}, new int[]{1, 1, 0}); // magic plant + natural plant + natural animal
+        CreateRecipe(new int[]{1, 0, 0}, new int[]{1, 0, 1}); // magic plant + natural plant + natural mineral
+        CreateRecipe(new int[]{1, 0, 0}, new int[]{0, 1, 1}); // magic plant + natural animal + natural mineral
+        CreateRecipe(new int[]{0, 1, 0}, new int[]{1, 1, 0}); // magic animal + natural plant + natural animal
+        CreateRecipe(new int[]{0, 1, 0}, new int[]{1, 0, 1}); // magic animal + natural plant + natural mineral
+        CreateRecipe(new int[]{0, 1, 0}, new int[]{0, 1, 1}); // magic animal + natural animal + natural mineral
+        CreateRecipe(new int[]{0, 0, 1}, new int[]{1, 1, 0}); // magic mineral + natural plant + natural animal
+        CreateRecipe(new int[]{0, 0, 1}, new int[]{1, 0, 1}); // magic mineral + natural plant + natural mineral
+        CreateRecipe(new int[]{0, 0, 1}, new int[]{0, 1, 1}); // magic mineral + natural animal + natural mineral
+
+        // ================== 2 INGREDIENTS RECIPES ==================
+
+        // 2 IDENTICAL MAGIC INGREDIENTS
         CreateRecipe(new int[]{2, 0, 0}, new int[]{0, 0, 0}); // 2 magic plants
         CreateRecipe(new int[]{0, 2, 0}, new int[]{0, 0, 0}); // 2 magic animals
         CreateRecipe(new int[]{0, 0, 2}, new int[]{0, 0, 0}); // 2 magic minerals
@@ -78,6 +272,8 @@ public class ConcoctionManager : MonoBehaviour
         CreateRecipe(new int[]{0, 0, 1}, new int[]{1, 0, 0}); // magic mineral + natural plant
         CreateRecipe(new int[]{0, 0, 1}, new int[]{0, 1, 0}); // magic mineral + natural animal
         CreateRecipe(new int[]{0, 0, 1}, new int[]{0, 0, 1}); // magic mineral + natural mineral
+
+        // ================== 1 INGREDIENT RECIPES ===================
 
         // 1 INGREDIENT - General fallback recipes
         CreateRecipe(new int[]{1, 0, 0}, new int[]{0, 0, 0}); // 1 magic plant
@@ -275,6 +471,14 @@ public class ConcoctionManager : MonoBehaviour
     {
         currentSelectedRecipe = FindFirstMatchingRecipe();
         UpdateRecipeDisplay();
+        
+        // Debug: Log the potential potion ID when ingredients are selected
+        if (selectedIngredients.Count > 0)
+        {
+            List<Ingredient> ingredients = GetSelectedIngredientsAsIngredients();
+            string futurePotionId = PotionUtils.GeneratePotionId(ingredients);
+            Debug.Log($"Selected ingredients would create potion ID: {futurePotionId} (Recipe: {(currentSelectedRecipe != null ? currentSelectedRecipe.potionName : "No valid recipe")})");
+        }
     }
     
     void UpdateRecipeDisplay()

@@ -1361,7 +1361,7 @@ MonoBehaviour:
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
-  m_enableWordWrapping: 1
+  m_enableWordWrapping: 0
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
   m_linkedTextComponent: {fileID: 0}
@@ -1661,7 +1661,7 @@ MonoBehaviour:
   recipeNameText: {fileID: 122281416}
   keepExistingPotionsToggle: {fileID: 11315402}
   discardPotionButton: {fileID: 1496693375}
-  roundProgressText: {fileID: 0}
+  roundProgressText: {fileID: 1490669332}
   basket: {fileID: 1969720585}
   animatedPotionPrefab: {fileID: 2539183703523634919, guid: 5fc205eda1e2b4c41b3b73eb94dc0dc1, type: 3}
   shelves:
@@ -1907,7 +1907,7 @@ MonoBehaviour:
   deckManager: {fileID: 1554145995}
   ingredientsContainer: {fileID: 1816117288}
   ingredientPrefab: {fileID: 7116151226152392908, guid: 4d4d2615d6f87994188a871e97afa31c, type: 3}
-  ingredientsToDraw: 9
+  ingredientsToDraw: 5
   ingredientSpacing: 1.5
 --- !u!4 &1969720586
 Transform:
