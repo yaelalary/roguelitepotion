@@ -420,7 +420,7 @@ public class ConcoctionManager : MonoBehaviour
         int mineralScore = magic[2] * 2 + natural[2] * 1;   // Minerals
         
         // Level = highest score among the 3 types
-        return Mathf.Max(plantScore, animalScore, mineralScore);
+        return Mathf.Max(plantScore, animalScore, mineralScore)*Mathf.Max(magic[0], magic[1], magic[2]);
     }
     
     int CalculatePotionDuration(int[] magic, int[] natural)
